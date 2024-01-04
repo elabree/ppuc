@@ -19,13 +19,11 @@ The code in this directory and all sub-directories is licenced under GPLv3, exce
 in a file's header or in a sub-directory. Be aware of the fact that your own enhancements of ppuc need to be licenced
 under a compatible licence.
 
-Due to complicated dependency management on different platforms, these libraries are included as source code copy:
-* [cargs](https://github.com/likle/cargs)
-
 PPUC uses
 * [libpinmame](https://github.com/vpinball/pinmame)
 * [libusb](https://libusb.info/)
 * [libserialport](https://github.com/sigrokproject/libserialport)
+* [cargs](https://github.com/likle/cargs)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 * [OpenAL Soft](https://openal-soft.org/)
 * [libppuc](https://github.com/PPUC/libppuc)
