@@ -1,28 +1,29 @@
-#include <string.h>
 #include <libusb.h>
+#include <string.h>
 
 #include "pin2dmd.h"
 
 //define PIN2DMD vendor id and product id
-#define VID 0x0314
-#define PID 0xe457
+#define VID    0x0314
+#define PID    0xe457
 
 //endpoints for PIN2DMD communication
-#define EP_IN 0x81
+#define EP_IN  0x81
 #define EP_OUT 0x01
 
 bool Pin2dmd = false;
 bool Pin2dmdXL = false;
 bool Pin2dmdHD = false;
 
-struct libusb_device **devs;
-struct libusb_device_handle *MyLibusbDeviceHandle = NULL;
+struct libusb_device** devs;
+struct libusb_device_handle* MyLibusbDeviceHandle = NULL;
 struct libusb_device_descriptor desc;
-struct libusb_context *ctx = NULL;
+struct libusb_context* ctx = NULL;
 
 UINT8 OutputBuffer[65536] = {};
 
-int Pin2dmdInit() {
+int
+Pin2dmdInit() {
     static int ret = 0;
     static unsigned char product[256] = {};
     static const char* string = NULL;
@@ -45,8 +46,7 @@ int Pin2dmdInit() {
         if (ret < 0) {
             return ret;
         }
-    }
-    else {
+    } else {
         return 0;
     }
 
@@ -60,7 +60,7 @@ int Pin2dmdInit() {
 
     ret = libusb_get_string_descriptor_ascii(MyLibusbDeviceHandle, desc.iProduct, product, 256);
 
-    if (libusb_claim_interface(MyLibusbDeviceHandle, 0) < 0)  //claims the interface with the Operating System
+    if (libusb_claim_interface(MyLibusbDeviceHandle, 0) < 0) //claims the interface with the Operating System
     {
         //Closes a device opened since the claim interface is failed.
         libusb_close(MyLibusbDeviceHandle);
@@ -73,16 +73,13 @@ int Pin2dmdInit() {
         if (strcmp(string, "PIN2DMD") == 0) {
             Pin2dmd = true;
             ret = 1;
-        }
-        else if (strcmp(string, "PIN2DMD XL") == 0) {
+        } else if (strcmp(string, "PIN2DMD XL") == 0) {
             Pin2dmdXL = true;
             ret = 2;
-        }
-        else if (strcmp(string, "PIN2DMD HD") == 0) {
+        } else if (strcmp(string, "PIN2DMD HD") == 0) {
             Pin2dmdHD = true;
             ret = 3;
-        }
-        else {
+        } else {
             ret = 0;
         }
     }
@@ -90,12 +87,10 @@ int Pin2dmdInit() {
     return ret;
 }
 
-void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth) {
-    if (
-        (width == 256 && height == 64 && Pin2dmdHD) ||
-        (width == 192 && height == 64 && (Pin2dmdXL || Pin2dmdHD)) ||
-        (width == 128 && height <= 32 && (Pin2dmd || Pin2dmdXL || Pin2dmdHD))
-    ) {
+void
+Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth) {
+    if ((width == 256 && height == 64 && Pin2dmdHD) || (width == 192 && height == 64 && (Pin2dmdXL || Pin2dmdHD))
+        || (width == 128 && height <= 32 && (Pin2dmd || Pin2dmdXL || Pin2dmdHD))) {
         int outputBufferIndex = 4;
         int frameSizeInByte = width * height / 8;
         int chunksOf512Bytes = (frameSizeInByte / 512) * bitDepth;
@@ -107,7 +102,7 @@ void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth) {
             OutputBuffer[2] = 0xe7; // 4 bit header
             OutputBuffer[3] = 0x00;
         } else {
-            OutputBuffer[2] = 0xe8; // non 4 bit header
+            OutputBuffer[2] = 0xe8;             // non 4 bit header
             OutputBuffer[3] = chunksOf512Bytes; // number of 512 byte chunks
         }
 
@@ -118,12 +113,10 @@ void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth) {
     }
 }
 
-void Pin2dmdRenderRaw(UINT16 width, UINT16 height, UINT8* Buffer, UINT32 frames) {
-    if (
-        (width == 256 && height == 64 && Pin2dmdHD) ||
-        (width == 192 && height == 64 && (Pin2dmdXL || Pin2dmdHD)) ||
-        (width == 128 && height <= 32 && (Pin2dmd || Pin2dmdXL || Pin2dmdHD))
-    ) {
+void
+Pin2dmdRenderRaw(UINT16 width, UINT16 height, UINT8* Buffer, UINT32 frames) {
+    if ((width == 256 && height == 64 && Pin2dmdHD) || (width == 192 && height == 64 && (Pin2dmdXL || Pin2dmdHD))
+        || (width == 128 && height <= 32 && (Pin2dmd || Pin2dmdXL || Pin2dmdHD))) {
         int frameSizeInByte = width * height / 8;
         int chunksOf512Bytes = (frameSizeInByte / 512) * frames;
         int bufferSizeInBytes = frameSizeInByte * frames;
