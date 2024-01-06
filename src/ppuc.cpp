@@ -78,7 +78,6 @@ static struct cag_option options[] = {
      .access_name = "no-serial",
      .value_name = NULL,
      .description = "No serial communication to controllers (optional)"},
-#if defined(SERUM_SUPPORT)
     {.identifier = 'u',
      .access_letters = "u",
      .access_name = "serum",
@@ -94,7 +93,6 @@ static struct cag_option options[] = {
      .access_name = "serum-skip-frames",
      .value_name = "VALUE",
      .description = "Serum ignore number of unknown frames (optional)"},
-#endif
     {.identifier = 'i',
      .access_letters = "i",
      .access_name = "console-display",
