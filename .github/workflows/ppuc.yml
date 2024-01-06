@@ -79,7 +79,7 @@ jobs:
           bind_mount_repository: true
           commands: |
             apt update -y --allow-releaseinfo-change
-            apt install --no-install-recommends -y pkg-config cmake autoconf automake libtool libudev-dev
+            apt install --no-install-recommends -y pkg-config cmake autoconf automake libtool libudev-dev zlib1g-dev
             ./platforms/${{ matrix.platform }}/${{ matrix.arch }}/build.sh
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
