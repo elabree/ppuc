@@ -88,7 +88,7 @@ cp src/libpinmame/libpinmame.h ../../third-party/include/
 cp cmake/libpinmame/CMakeLists_linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
 cmake --build build/Release
-cp build/Release/libpinmame.a ../../third-party/build-libs/linux/x64/
+#cp build/Release/libpinmame.a ../../third-party/build-libs/linux/x64/
 cp -P build/Release/libpinmame*.so* ../../third-party/runtime-libs/linux/x64/
 cd ..
 
