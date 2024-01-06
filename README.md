@@ -25,7 +25,7 @@ PPUC uses
 * [libserialport](https://github.com/sigrokproject/libserialport)
 * [cargs](https://github.com/likle/cargs)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
-* [OpenAL Soft](https://openal-soft.org/)
+* [openal-soft](https://github.com/kcat/openal-soft/)
 * [libppuc](https://github.com/PPUC/libppuc)
 * [libzedmd](https://github.com/PPUC/libzedmd)
 * [libserum](https://github.com/zesinger/libserum)
@@ -60,43 +60,31 @@ These components are still in an early development stage and the documentation w
 #### Windows (x64)
 
 ```shell
-platforms/win/x64/external.sh
-cmake -G "Visual Studio 17 2022" -DPLATFORM=win -DARCH=x64 -B build
-cmake --build build --config Release
+platforms/win/x64/build.sh
 ```
 
 #### Windows (x86)
 
 ```shell
-platforms/win/x86/external.sh
-cmake -G "Visual Studio 17 2022" -A Win32 -DPLATFORM=win -DARCH=x86 -B build
-cmake --build build --config Release
+platforms/win/x86/build.sh
 ```
 
 #### Linux (x64)
 ```shell
-platforms/linux/x64/external.sh
-cmake -DPLATFORM=linux -DARCH=x64 -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
+platforms/linux/x64/build.sh
 ```
 
 #### Linux (aarch64)
 ```shell
-platforms/linux/aarch64/external.sh
-cmake -DPLATFORM=linux -DARCH=aarch64 -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
+platforms/linux/aarch64/build.sh
 ```
 
 #### MacOS (arm64)
 ```shell
-platforms/macos/arm64/external.sh
-cmake -DPLATFORM=macos -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
+platforms/macos/arm64/build.sh
 ```
 
 #### MacOS (x64)
 ```shell
-platforms/macos/x64/external.sh
-cmake -DPLATFORM=macos -DARCH=x64 -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
+platforms/macos/x64/build.sh
 ```

@@ -13,20 +13,14 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include "../libpinmame/libpinmame.h"
-#include "../../../libppuc/src/PPUC.h"
-#include "../../../libppuc/src/Event.h"
+#include "libpinmame.h"
+#include "PPUC.h"
+#include "io-boards/Event.h"
 #include "dmd/dmd.h"
 #include "pin2dmd/pin2dmd.h"
-#include "cargs/cargs.h"
-
-#if defined(ZEDMD_SUPPORT)
-#include "../../../libzedmd/src/ZeDMD.h"
-ZeDMD zedmd;
-#endif
-#if defined(SERUM_SUPPORT)
-#include "../../../libserum/src/serum-decode.h"
-#endif
+#include "cargs.h"
+#include "ZeDMD.h"
+#include "serum-decode.h"
 
 #define MAX_AUDIO_BUFFERS 4
 #define MAX_AUDIO_QUEUE_SIZE 10
@@ -41,6 +35,7 @@ int _audioChannels;
 int _audioSampleRate;
 
 PPUC *ppuc;
+ZeDMD zedmd;
 int pin2dmd_connected = 0;
 int zedmd_connected = 0;
 
@@ -250,7 +245,6 @@ void Pin2DmdThread()
 
 void ZeDmdThread()
 {
-#if defined(ZEDMD_SUPPORT)
     int zedmd_frame_buffer_position = 0;
     uint16_t prevWidth = 0;
     uint16_t prevHeight = 0;
@@ -280,7 +274,6 @@ void ZeDmdThread()
 
             if (opt_serum)
             {
-#if defined(SERUM_SUPPORT)
                 uint8_t palette[192] = {0};
                 uint8_t rotations[24] = {0};
                 UINT32 triggerID;
@@ -298,7 +291,6 @@ void ZeDmdThread()
 
                     // todo: send DMD Event with triggerID
                 }
-#endif
             }
             else
             {
@@ -330,7 +322,6 @@ void ZeDmdThread()
             }
         }
     }
-#endif
 }
 
 void ConsoleDmdThread()
@@ -526,10 +517,8 @@ int main(int argc, char *argv[])
     const char *config_file = NULL;
     const char *opt_rom = NULL;
     const char *opt_serial = NULL;
-#if defined(SERUM_SUPPORT)
     const char *opt_serum_timeout = NULL;
     const char *opt_serum_skip_frames = NULL;
-#endif
 
     cag_option_prepare(&cag_context, options, CAG_ARRAY_SIZE(options), argc, argv);
     while (cag_option_fetch(&cag_context))
@@ -549,7 +538,6 @@ int main(int argc, char *argv[])
         case 'n':
             opt_no_serial = true;
             break;
-#if defined(SERUM_SUPPORT)
         case 'u':
             opt_serum = true;
             break;
@@ -559,7 +547,6 @@ int main(int argc, char *argv[])
         case 'p':
             opt_serum_skip_frames = cag_option_get_value(&cag_context);
             break;
-#endif
         case 'i':
             opt_console_display = true;
             break;
@@ -614,7 +601,6 @@ int main(int argc, char *argv[])
     // So it is important to start that search before PIN2DMD
     // or the RS485 BUS get initialized.
     std::thread t_zedmd;
-#if defined(ZEDMD_SUPPORT)
     zedmd.IgnoreDevice(opt_serial);
     // zedmd_connected = (int)zedmd.OpenWiFi("192.168.178.125", 3333);
     zedmd_connected = (int)zedmd.Open();
@@ -630,7 +616,6 @@ int main(int argc, char *argv[])
 
         t_zedmd = std::thread(ZeDmdThread);
     }
-#endif
 
     pin2dmd_connected = Pin2dmdInit();
     if (opt_debug)
@@ -679,7 +664,6 @@ int main(int argc, char *argv[])
     snprintf((char *)config.vpmPath, PINMAME_MAX_PATH, "%s/.pinmame/", getenv("HOME"));
 #endif
 
-#if defined(SERUM_SUPPORT)
     if (opt_serum)
     {
         int pwidth;
@@ -722,7 +706,6 @@ int main(int argc, char *argv[])
             opt_serum = false;
         }
     }
-#endif
 
     // Initialize the sound device
     const ALCchar *defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);

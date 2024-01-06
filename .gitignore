@@ -1,0 +1,10 @@
+/build/
+/out/
+/.vs/
+/.vscode/
+CMakeSettings.json
+external/
+ppuc/
+third-party/runtime-libs/
+third-party/build-libs/
+third-party/include/
