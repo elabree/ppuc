@@ -34,10 +34,10 @@ cd cargs-${LIBCARGS_SHA}
 cp include/cargs.h ../../third-party/include/
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_OSX_ARCHITECTURES=arm64 ..
 make
 cp libcargs.a ../../../third-party/build-libs/macos/arm64/
-cmake -DBUILD_SHARED_LIBS=ON ..
+cmake -DCMAKE_OSX_ARCHITECTURES=arm64 -DBUILD_SHARED_LIBS=ON ..
 make
 cp -P libcargs*.dylib ../../../third-party/runtime-libs/macos/arm64/
 cd ../..
@@ -53,7 +53,7 @@ cp libusb/libusb.h ../../third-party/include
 ./bootstrap.sh
 mkdir build
 cd build
-../configure --host=x86_64-apple-darwin --disable-examples-build --disable-tests-build LDFLAGS="-Wl,-install_name,@rpath/libusb-1.0.0.dylib"
+../configure --host=arm64-apple-darwin --disable-examples-build --disable-tests-build LDFLAGS="-Wl,-install_name,@rpath/libusb-1.0.0.dylib"
 make -j${NUM_PROCS}
 cd ..
 cp build/libusb/.libs/libusb*.a ../../third-party/build-libs/macos/arm64/
@@ -68,11 +68,11 @@ curl -sL https://github.com/kcat/openal-soft/archive/${LIBOPENAL_SHA}.zip -o ope
 unzip openal-soft
 cd openal-soft-${LIBOPENAL_SHA}
 cp -r include/AL ../../third-party/include/
-cmake -DCMAKE_BUILD_TYPE=Release -DLIBTYPE=STATIC -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 -DLIBTYPE=STATIC -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
 cmake --build build
 cp build/libopenal.a ../../third-party/build-libs/macos/arm64/
 rm -rf build
-cmake -DCMAKE_BUILD_TYPE=Release -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
 cmake --build build
 cp -P build/libopenal*.dylib ../../third-party/runtime-libs/macos/arm64/
 cd ..
@@ -86,7 +86,7 @@ unzip pinmame.zip
 cd pinmame-${LIBPINMAME_SHA}
 cp src/libpinmame/libpinmame.h ../../third-party/include/
 cp cmake/libpinmame/CMakeLists_osx-arm64.txt CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 -B build/Release
 cmake --build build/Release
 cp build/Release/libpinmame.a ../../third-party/build-libs/macos/arm64/
 cp -P build/Release/libpinmame*.dylib ../../third-party/runtime-libs/macos/arm64/

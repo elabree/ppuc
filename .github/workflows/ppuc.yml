@@ -54,6 +54,9 @@ jobs:
             arch: aarch64
     steps:
       - uses: actions/checkout@v4
+      - if: (matrix.platform == 'linux' && matrix.arch == 'x64')
+        name: Install libudev-dev
+        run: apt-get install libudev-dev
       - if: (matrix.platform == 'win')
         name: Add msbuild to path (win runner)
         uses: microsoft/setup-msbuild@v1.1
@@ -76,7 +79,7 @@ jobs:
           bind_mount_repository: true
           commands: |
             apt-get update -y --allow-releaseinfo-change
-            apt-get install --no-install-recommends -y pkg-config cmake autoconf automake libtool
+            apt-get install --no-install-recommends -y pkg-config cmake autoconf automake libtool libudev-dev
             ./platforms/${{ matrix.platform }}/${{ matrix.arch }}/build.sh
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
