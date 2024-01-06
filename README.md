@@ -48,6 +48,15 @@ These components are still in an early development stage and the documentation w
 * -d
     * enable debug mode, overwrites *debug* setting in config file
     * optional
+* -u
+    * enable Serum colorization
+    * optional
+* -t VALUE
+    * Serum timeout in milliseconds to ignore unknown frames
+    * optional
+* -p VALUE
+    * Serum ignore number of unknown frames
+    * optional
 * -i
     * render display in console
     * optional
