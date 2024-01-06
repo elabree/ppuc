@@ -41,7 +41,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
-add_executable(ppuc_pinamme
+add_executable(ppuc_pinmame
    src/dmd/dmd.h
    src/dmd/dmd.cpp
    src/pin2dmd/pin2dmd.h
@@ -49,15 +49,15 @@ add_executable(ppuc_pinamme
    src/ppuc.cpp
 )
 
-target_include_directories(ppuc_pinamme PUBLIC
+target_include_directories(ppuc_pinmame PUBLIC
    third-party/include
 )
 
-target_link_directories(ppuc_pinamme PUBLIC
+target_link_directories(ppuc_pinmame PUBLIC
    third-party/runtime-libs/${PLATFORM}/${ARCH}
 )
 
-target_link_libraries(ppuc_pinamme LINK_PUBLIC
+target_link_libraries(ppuc_pinmame LINK_PUBLIC
    pinmame
    ppuc
    serum
