@@ -85,7 +85,7 @@ curl -sL https://github.com/vpinball/pinmame/archive/${LIBPINMAME_SHA}.zip -o pi
 unzip pinmame.zip
 cd pinmame-${LIBPINMAME_SHA}
 cp src/libpinmame/libpinmame.h ../../third-party/include/
-cp cmake/libpinmame/CMakeLists_osx-aarch64.txt CMakeLists.txt
+cp cmake/libpinmame/CMakeLists_linux-aarch64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
 cmake --build build/Release
 cp build/Release/libpinmame.a ../../third-party/build-libs/linux/aarch64/
