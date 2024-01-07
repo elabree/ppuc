@@ -53,7 +53,7 @@ cp libusb/libusb.h ../../third-party/include
 ./bootstrap.sh
 mkdir build
 cd build
-../configure --host=arm64-apple-darwin --target=arm64-apple-darwin --disable-examples-build --disable-tests-build LDFLAGS="-Wl,-install_name,@rpath/libusb-1.0.0.dylib"
+../configure --build=arm64-apple-darwin --target=arm64-apple-darwin --disable-examples-build --disable-tests-build LDFLAGS="-Wl,-install_name,@rpath/libusb-1.0.0.dylib"
 make -j${NUM_PROCS}
 cd ..
 cp build/libusb/.libs/libusb*.a ../../third-party/build-libs/macos/arm64/
