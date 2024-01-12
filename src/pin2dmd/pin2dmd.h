@@ -7,6 +7,7 @@ typedef unsigned int UINT32;
 
 int Pin2dmdInit();
 void Pin2dmdRender(UINT16 width, UINT16 height, UINT8* Buffer, int bitDepth);
-void Pin2dmdRenderRaw(UINT16 width, UINT16 height, UINT8* Buffer, UINT32 frames);
+void Pin2dmdRenderRaw(UINT16 width, UINT16 height, UINT8* Buffer,
+                      UINT32 frames);
 
 #endif /* PIN2DMD_H */
