@@ -55,8 +55,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - if: (matrix.platform == 'linux' && matrix.arch == 'x64')
-        name: Install libudev-dev
-        run: sudo apt install libudev-dev
+        name: Install autoconf libtool libudev-dev libpipewire-0.3-dev
+        run: sudo apt install autoconf libtool libudev-dev libpipewire-0.3-dev
       - if: (matrix.platform == 'win')
         name: Add msbuild to path (win runner)
         uses: microsoft/setup-msbuild@v1.1

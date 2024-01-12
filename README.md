@@ -83,6 +83,15 @@ platforms/win/x86/build.sh
 platforms/linux/x64/build.sh
 ```
 
+##### Ubuntu 23.10 Example
+```shell
+sudo apt install autoconf libtool libudev-dev libpipewire-0.3-dev git
+git clone https://github.com/PPUC/ppuc.git
+cd ppuc
+platforms/linux/x64/build.sh
+ppuc/ppuc_pinmame -c examples/t2.yml -n -i
+```
+
 #### Linux (aarch64)
 ```shell
 platforms/linux/aarch64/build.sh
