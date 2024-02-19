@@ -42,10 +42,6 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
 add_executable(ppuc_pinmame
-   src/dmd/dmd.h
-   src/dmd/dmd.cpp
-   src/pin2dmd/pin2dmd.h
-   src/pin2dmd/pin2dmd.cpp
    src/ppuc.cpp
 )
 
@@ -60,9 +56,7 @@ target_link_directories(ppuc_pinmame PUBLIC
 target_link_libraries(ppuc_pinmame LINK_PUBLIC
    pinmame
    ppuc
-   serum
-   zedmd
+   dmdutil
    openal
-   usb-1.0
    cargs
 )

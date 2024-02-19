@@ -3,26 +3,38 @@
 set -e
 
 LIBCARGS_SHA=5949a20a926e902931de4a32adaad9f19c76f251
-LIBUSB_SHA=4239bc3a50014b8e6a5a2a59df1fff3b7469543b
 LIBOPENAL_SHA=d3875f333fb6abe2f39d82caca329414871ae53b
 LIBPINMAME_SHA=master
 LIBPPUC_SHA=main
-LIBZEDMD_SHA=main
-LIBSERUM_SHA=main
+LIBDMDUTIL_SHA=master
 
 echo "Building libraries..."
 echo "  LIBCARGS_SHA: ${LIBCARGS_SHA}"
-echo "  LIBUSB_SHA: ${LIBUSB_SHA}"
 echo "  LIBOPENAL_SHA: ${LIBOPENAL_SHA}"
 echo "  LIBPINMAME_SHA: ${LIBPINMAME_SHA}"
 echo "  LIBPPUC_SHA: ${LIBPPUC_SHA}"
-echo "  LIBZEDMD_SHA: ${LIBZEDMD_SHA}"
-echo "  LIBSERUM_SHA: ${LIBSERUM_SHA}"
+echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo ""
 
 rm -rf external
 mkdir external
 cd external
+
+#
+# libdmdutil
+#
+
+curl -sL https://github.com/vpinball/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
+unzip libdmdutil.zip
+cd libdmdutil-${LIBDMDUTIL_SHA}
+cp -r include/DMDUtil ../../third-party/include/
+platforms/macos/arm64/external.sh
+rsync -a third-party/ ../../third-party
+cmake -DPLATFORM=macos -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build
+cp build/*.a ../../third-party/build-libs/macos/arm64/
+cp -P build/*.dylib ../../third-party/runtime-libs/macos/arm64/
+cd ..
 
 #
 # libcargs
@@ -41,24 +53,6 @@ cmake -DCMAKE_OSX_ARCHITECTURES=arm64 -DBUILD_SHARED_LIBS=ON ..
 make
 cp -P libcargs*.dylib ../../../third-party/runtime-libs/macos/arm64/
 cd ../..
-
-#
-# libusb
-#
-
-curl -sL https://github.com/libusb/libusb/archive/${LIBUSB_SHA}.zip -o libusb.zip
-unzip libusb.zip
-cd libusb-$LIBUSB_SHA
-cp libusb/libusb.h ../../third-party/include
-./bootstrap.sh
-mkdir build
-cd build
-../configure --build=arm64-apple-darwin --target=arm64-apple-darwin --disable-examples-build --disable-tests-build LDFLAGS="-Wl,-install_name,@rpath/libusb-1.0.0.dylib"
-make -j${NUM_PROCS}
-cd ..
-cp build/libusb/.libs/libusb*.a ../../third-party/build-libs/macos/arm64/
-cp -P build/libusb/.libs/libusb*.dylib ../../third-party/runtime-libs/macos/arm64/
-cd ..
 
 #
 # libopenal
@@ -107,35 +101,3 @@ cmake --build build
 cp build/libppuc.a ../../third-party/build-libs/macos/arm64/
 cp -P build/libppuc*.dylib ../../third-party/runtime-libs/macos/arm64/
 cd ..
-
-#
-# libzedmd
-#
-
-curl -sL https://github.com/PPUC/libzedmd/archive/${LIBZEDMD_SHA}.zip -o libzedmd.zip
-unzip libzedmd.zip
-cd libzedmd-${LIBZEDMD_SHA}
-cp src/ZeDMD.h ../../third-party/include/
-platforms/macos/arm64/external.sh
-rsync -a third-party/ ../../third-party
-cmake -DPLATFORM=macos -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
-cp build/libzedmd.a ../../third-party/build-libs/macos/arm64/
-cp -P build/libzedmd*.dylib ../../third-party/runtime-libs/macos/arm64/
-cd ..
-
-#
-# libserum
-#
-
-curl -sL https://github.com/zesinger/libserum/archive/${LIBSERUM_SHA}.zip -o libserum.zip
-unzip libserum.zip
-cd libserum-${LIBSERUM_SHA}
-cp src/serum-decode.h ../../third-party/include/
-rsync -a third-party/ ../../third-party
-cmake -DPLATFORM=macos -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
-cp build/libserum.a ../../third-party/build-libs/macos/arm64/
-cp -P build/libserum*.dylib ../../third-party/runtime-libs/macos/arm64/
-cd ..
-

@@ -751,10 +751,10 @@ pwmOutput:
     number: 3
     board: 2
     port: 21
-    power: 128
-    holdPower: 0
-    holdPowerActivationTime: 0
-    minPulseTime: 0
+    power: 255
+    holdPower: 128
+    holdPowerActivationTime: 2000
+    minPulseTime: 5000
     maxPulseTime: 0
     fastFlipSwitch: 0
   -

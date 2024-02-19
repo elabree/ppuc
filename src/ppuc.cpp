@@ -9,25 +9,18 @@
 #include <string.h>
 
 #include <chrono>
-#include <condition_variable>
-#include <mutex>
-#include <queue>
-#include <shared_mutex>
 #include <thread>
 
-#include "ZeDMD.h"
+#include "DMDUtil/ConsoleDMD.h"
+#include "DMDUtil/DMDUtil.h"
 #include "cargs.h"
-#include "dmd/dmd.h"
 #include "io-boards/Event.h"
 #include "libpinmame.h"
-#include "pin2dmd/pin2dmd.h"
-#include "serum-decode.h"
 
 #define MAX_AUDIO_BUFFERS 4
 #define MAX_AUDIO_QUEUE_SIZE 10
 #define MAX_EVENT_SEND_QUEUE_SIZE 10
 #define MAX_EVENT_RECV_QUEUE_SIZE 10
-#define DMD_FRAME_BUFFERS 10
 
 ALuint _audioSource;
 ALuint _audioBuffers[MAX_AUDIO_BUFFERS];
@@ -35,27 +28,14 @@ std::queue<void*> _audioQueue;
 int _audioChannels;
 int _audioSampleRate;
 
+DMDUtil::DMD* pDmd;
 PPUC* ppuc;
-ZeDMD zedmd;
-int pin2dmd_connected = 0;
-int zedmd_connected = 0;
-
-uint8_t dmd_planes_buffer[12288] = {0};
-uint8_t dmd_serum_planes_buffer[12288] = {0};
-uint8_t dmd_frame_buffer[DMD_FRAME_BUFFERS][16384] = {0};
-uint8_t dmd_frame_buffer_width[DMD_FRAME_BUFFERS] = {0};
-uint8_t dmd_frame_buffer_height[DMD_FRAME_BUFFERS] = {0};
-uint8_t dmd_frame_buffer_depth[DMD_FRAME_BUFFERS] = {0};
-int dmd_frame_buffer_position = 0;
-std::atomic<bool> dmd_ready = false;
-std::shared_mutex dmd_shared_mutex;
-std::condition_variable_any dmd_cv;
-std::atomic<bool> stop_flag = false;
 
 bool opt_debug = false;
 bool opt_no_serial = false;
 bool opt_serum = false;
 bool opt_console_display = false;
+const char* opt_rom = NULL;
 int game_state = 0;
 
 static struct cag_option options[] = {
@@ -102,6 +82,11 @@ static struct cag_option options[] = {
      .access_name = "console-display",
      .value_name = NULL,
      .description = "Enable console display (optional)"},
+    {.identifier = 'm',
+     .access_letters = "m",
+     .access_name = "dump-display",
+     .value_name = NULL,
+     .description = "Enable display dump (optional)"},
     {.identifier = 'd',
      .access_letters = "d",
      .access_name = "debug",
@@ -112,7 +97,7 @@ static struct cag_option options[] = {
      .access_name = "help",
      .description = "Show help"}};
 
-void CALLBACK Game(PinmameGame* game) {
+void PINMAMECALLBACK Game(PinmameGame* game) {
   printf(
       "Game(): name=%s, description=%s, manufacturer=%s, year=%s, "
       "flags=%lu, found=%d\n",
@@ -120,7 +105,7 @@ void CALLBACK Game(PinmameGame* game) {
       (unsigned long)game->flags, game->found);
 }
 
-void CALLBACK OnStateUpdated(int state, const void* p_userData) {
+void PINMAMECALLBACK OnStateUpdated(int state, const void* p_userData) {
   if (opt_debug) {
     printf("OnStateUpdated(): state=%d\n", state);
   }
@@ -146,8 +131,9 @@ void CALLBACK OnStateUpdated(int state, const void* p_userData) {
   }
 }
 
-void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format,
-                           va_list args, const void* p_userData) {
+void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel,
+                                  const char* format, va_list args,
+                                  const void* p_userData) {
   char buffer[1024];
   vsnprintf(buffer, sizeof(buffer), format, args);
 
@@ -158,9 +144,9 @@ void CALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format,
   }
 }
 
-void CALLBACK OnDisplayAvailable(int index, int displayCount,
-                                 PinmameDisplayLayout* p_displayLayout,
-                                 const void* p_userData) {
+void PINMAMECALLBACK OnDisplayAvailable(int index, int displayCount,
+                                        PinmameDisplayLayout* p_displayLayout,
+                                        const void* p_userData) {
   if (opt_debug) {
     printf(
         "OnDisplayAvailable(): index=%d, displayCount=%d, type=%d, top=%d, "
@@ -172,9 +158,9 @@ void CALLBACK OnDisplayAvailable(int index, int displayCount,
   }
 }
 
-void CALLBACK OnDisplayUpdated(int index, void* p_displayData,
-                               PinmameDisplayLayout* p_displayLayout,
-                               const void* p_userData) {
+void PINMAMECALLBACK OnDisplayUpdated(int index, void* p_displayData,
+                                      PinmameDisplayLayout* p_displayLayout,
+                                      const void* p_userData) {
   if (p_displayData == nullptr) {
     return;
   }
@@ -188,180 +174,21 @@ void CALLBACK OnDisplayUpdated(int index, void* p_displayData,
         p_displayLayout->depth, p_displayLayout->length);
   }
 
-  std::unique_lock<std::shared_mutex> ul(dmd_shared_mutex);
-  if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) ==
-      PINMAME_DISPLAY_TYPE_DMD) {
-    dmd_frame_buffer_width[dmd_frame_buffer_position] = p_displayLayout->width;
-    dmd_frame_buffer_height[dmd_frame_buffer_position] =
-        p_displayLayout->height;
-    dmd_frame_buffer_depth[dmd_frame_buffer_position] = p_displayLayout->depth;
-    memcpy(dmd_frame_buffer[dmd_frame_buffer_position++], p_displayData,
-           p_displayLayout->width * p_displayLayout->height);
-    if (dmd_frame_buffer_position >= DMD_FRAME_BUFFERS) {
-      dmd_frame_buffer_position = 0;
-    }
-    dmd_ready = true;
-  } else {
-    // todo
-    // DumpAlphanumeric(index, (uint16_t*)p_displayData, p_displayLayout);
-  }
-  ul.unlock();
-  dmd_cv.notify_all();
-}
-
-void Pin2DmdThread() {
-  int pin2dmd_frame_buffer_position = 0;
-
-  while (true) {
-    std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
-    dmd_cv.wait(sl, []() { return dmd_ready || stop_flag; });
-    sl.unlock();
-    if (stop_flag) {
-      return;
-    }
-
-    while (pin2dmd_frame_buffer_position != dmd_frame_buffer_position) {
-      dmdConvertToFrame(dmd_frame_buffer_width[pin2dmd_frame_buffer_position],
-                        dmd_frame_buffer_height[pin2dmd_frame_buffer_position],
-                        dmd_frame_buffer[pin2dmd_frame_buffer_position],
-                        dmd_planes_buffer,
-                        dmd_frame_buffer_depth[pin2dmd_frame_buffer_position]);
-      Pin2dmdRender(dmd_frame_buffer_width[pin2dmd_frame_buffer_position],
-                    dmd_frame_buffer_height[pin2dmd_frame_buffer_position],
-                    dmd_planes_buffer,
-                    dmd_frame_buffer_depth[pin2dmd_frame_buffer_position]);
-
-      pin2dmd_frame_buffer_position++;
-      if (pin2dmd_frame_buffer_position >= DMD_FRAME_BUFFERS) {
-        pin2dmd_frame_buffer_position = 0;
-      }
-    }
+  switch (p_displayLayout->type) {
+    case PINMAME_DISPLAY_TYPE_VIDEO:
+      break;
+    case PINMAME_DISPLAY_TYPE_DMD:
+      pDmd->UpdateData((uint8_t*)p_displayData, p_displayLayout->depth,
+                       p_displayLayout->width, p_displayLayout->height, 255,
+                       255, 255, opt_rom);
+      break;
+    default:
+      break;
   }
 }
 
-void ZeDmdThread() {
-  int zedmd_frame_buffer_position = 0;
-  uint16_t prevWidth = 0;
-  uint16_t prevHeight = 0;
-  uint8_t prevBitDepth = 0;
-
-  while (true) {
-    std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
-    dmd_cv.wait(sl, []() { return dmd_ready || stop_flag; });
-    sl.unlock();
-    if (stop_flag) {
-      return;
-    }
-
-    while (zedmd_frame_buffer_position != dmd_frame_buffer_position) {
-      if (dmd_frame_buffer_width[zedmd_frame_buffer_position] != prevWidth ||
-          dmd_frame_buffer_height[zedmd_frame_buffer_position] != prevHeight) {
-        prevWidth = dmd_frame_buffer_width[zedmd_frame_buffer_position];
-        prevHeight = dmd_frame_buffer_height[zedmd_frame_buffer_position];
-        zedmd.SetFrameSize(prevWidth, prevHeight);
-      }
-      uint8_t renderBuffer[prevWidth * prevHeight];
-      memcpy(renderBuffer, dmd_frame_buffer[zedmd_frame_buffer_position],
-             prevWidth * prevHeight);
-
-      if (opt_serum) {
-        uint8_t palette[192] = {0};
-        uint8_t rotations[24] = {0};
-        UINT32 triggerID;
-        UINT32 hashcode;
-        int frameID;
-
-        Serum_SetStandardPalette(
-            zedmd.GetDefaultPalette(
-                dmd_frame_buffer_depth[zedmd_frame_buffer_position]),
-            dmd_frame_buffer_depth[zedmd_frame_buffer_position]);
-
-        if (Serum_ColorizeWithMetadata(renderBuffer, prevWidth, prevHeight,
-                                       &palette[0], &rotations[0], &triggerID,
-                                       &hashcode, &frameID)) {
-          // Force other render modes to reload the default palette.
-          prevBitDepth = 0;
-
-          zedmd.RenderColoredGray6(renderBuffer, palette, rotations);
-
-          // todo: send DMD Event with triggerID
-        }
-      } else {
-        if (dmd_frame_buffer_depth[zedmd_frame_buffer_position] !=
-            prevBitDepth) {
-          prevBitDepth = dmd_frame_buffer_depth[zedmd_frame_buffer_position];
-          zedmd.SetDefaultPalette(prevBitDepth);
-        }
-
-        switch (prevBitDepth) {
-          case 2:
-            zedmd.RenderGray2(renderBuffer);
-            break;
-
-          case 4:
-            zedmd.RenderGray4(renderBuffer);
-            break;
-
-          default:
-            printf("Unsupported ZeDMD bit depth: %d\n", prevBitDepth);
-        }
-      }
-
-      zedmd_frame_buffer_position++;
-      if (zedmd_frame_buffer_position >= DMD_FRAME_BUFFERS) {
-        zedmd_frame_buffer_position = 0;
-      }
-    }
-  }
-}
-
-void ConsoleDmdThread() {
-  int console_frame_buffer_position = 0;
-
-  while (true) {
-    std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
-    dmd_cv.wait(sl, []() { return dmd_ready || stop_flag; });
-    sl.unlock();
-    if (stop_flag) {
-      return;
-    }
-
-    while (console_frame_buffer_position != dmd_frame_buffer_position) {
-      dmdConsoleRender(dmd_frame_buffer_width[console_frame_buffer_position],
-                       dmd_frame_buffer_height[console_frame_buffer_position],
-                       dmd_frame_buffer[console_frame_buffer_position],
-                       dmd_frame_buffer_depth[console_frame_buffer_position]);
-
-      if (!opt_debug) {
-        printf("\033[%dA",
-               dmd_frame_buffer_height[console_frame_buffer_position]);
-      }
-
-      console_frame_buffer_position++;
-      if (console_frame_buffer_position >= DMD_FRAME_BUFFERS) {
-        console_frame_buffer_position = 0;
-      }
-    }
-  }
-}
-
-void ResetDmdThread() {
-  while (true) {
-    std::shared_lock<std::shared_mutex> sl(dmd_shared_mutex);
-    dmd_cv.wait(sl, []() { return dmd_ready || stop_flag; });
-    sl.unlock();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    dmd_ready = false;
-
-    if (stop_flag) {
-      return;
-    }
-  }
-}
-
-int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo,
-                              const void* p_userData) {
+int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo,
+                                     const void* p_userData) {
   if (opt_debug) {
     printf(
         "OnAudioAvailable(): format=%d, channels=%d, sampleRate=%.2f, "
@@ -392,8 +219,8 @@ int CALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo,
   return p_audioInfo->samplesPerFrame;
 }
 
-int CALLBACK OnAudioUpdated(void* p_buffer, int samples,
-                            const void* p_userData) {
+int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples,
+                                   const void* p_userData) {
   if (_audioQueue.size() >= MAX_AUDIO_QUEUE_SIZE) {
     while (!_audioQueue.empty()) {
       void* p_destBuffer = _audioQueue.front();
@@ -445,8 +272,8 @@ int CALLBACK OnAudioUpdated(void* p_buffer, int samples,
   return samples;
 }
 
-void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState,
-                                const void* p_userData) {
+void PINMAMECALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState,
+                                       const void* p_userData) {
   if (opt_debug) {
     printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo,
            p_solenoidState->state);
@@ -455,8 +282,8 @@ void CALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState,
   ppuc->SetSolenoidState(p_solenoidState->solNo, p_solenoidState->state);
 }
 
-void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo,
-                              const void* p_userData) {
+void PINMAMECALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo,
+                                     const void* p_userData) {
   if (opt_debug) {
     printf(
         "OnMechAvailable: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, "
@@ -466,8 +293,8 @@ void CALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo,
   }
 }
 
-void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo,
-                            const void* p_userData) {
+void PINMAMECALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo,
+                                   const void* p_userData) {
   if (opt_debug) {
     printf(
         "OnMechUpdated: mechNo=%d, type=%d, length=%d, steps=%d, pos=%d, "
@@ -477,14 +304,15 @@ void CALLBACK OnMechUpdated(int mechNo, PinmameMechInfo* p_mechInfo,
   }
 }
 
-void CALLBACK OnConsoleDataUpdated(void* p_data, int size,
-                                   const void* p_userData) {
+void PINMAMECALLBACK OnConsoleDataUpdated(void* p_data, int size,
+                                          const void* p_userData) {
   if (opt_debug) {
     printf("OnConsoleDataUpdated: size=%d\n", size);
   }
 }
 
-int CALLBACK IsKeyPressed(PINMAME_KEYCODE keycode, const void* p_userData) {
+int PINMAMECALLBACK IsKeyPressed(PINMAME_KEYCODE keycode,
+                                 const void* p_userData) {
   return 0;
 }
 
@@ -492,10 +320,10 @@ int main(int argc, char* argv[]) {
   char identifier;
   cag_option_context cag_context;
   const char* config_file = NULL;
-  const char* opt_rom = NULL;
   const char* opt_serial = NULL;
   const char* opt_serum_timeout = NULL;
   const char* opt_serum_skip_frames = NULL;
+  bool opt_dump = false;
 
   cag_option_prepare(&cag_context, options, CAG_ARRAY_SIZE(options), argc,
                      argv);
@@ -525,6 +353,9 @@ int main(int argc, char* argv[]) {
         break;
       case 'i':
         opt_console_display = true;
+        break;
+      case 'm':
+        opt_dump = true;
         break;
       case 'd':
         opt_debug = true;
@@ -566,41 +397,23 @@ int main(int argc, char* argv[]) {
 
   // Initialize displays.
   // ZeDMD messes with USB ports. when searching for the DMD.
-  // So it is important to start that search before PIN2DMD
-  // or the RS485 BUS get initialized.
-  std::thread t_zedmd;
-  zedmd.IgnoreDevice(opt_serial);
-  // zedmd_connected = (int)zedmd.OpenWiFi("192.168.178.125", 3333);
-  zedmd_connected = (int)zedmd.Open();
+  // So it is important to start that search before the RS485 BUS gets
+  // initialized.
+  pDmd = new DMDUtil::DMD();
   if (opt_debug) {
-    printf("ZeDMD: %d\n", zedmd_connected);
-  }
-  if (zedmd_connected) {
-    if (opt_debug) {
-      zedmd.EnableDebug();
-    }
-
-    zedmd.DisablePreUpscaling();
-    // zedmd.EnablePreUpscaling();
-
-    t_zedmd = std::thread(ZeDmdThread);
+    printf("Finding displays...\n");
   }
 
-  pin2dmd_connected = Pin2dmdInit();
-  if (opt_debug) {
-    printf("PIN2DMD: %d\n", pin2dmd_connected);
-  }
-  std::thread t_pin2dmd;
-  if (pin2dmd_connected) {
-    t_pin2dmd = std::thread(Pin2DmdThread);
-  }
-
-  std::thread t_consoledmd;
+  pDmd->FindDisplays();
   if (opt_console_display) {
-    t_consoledmd = std::thread(ConsoleDmdThread);
+    pDmd->CreateConsoleDMD(!opt_debug);
+  }
+  if (opt_dump) {
+    pDmd->DumpDMDTxt();
   }
 
-  std::thread t_resetdmd(ResetDmdThread);
+  while (DMDUtil::DMD::IsFinding())
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   if (!opt_no_serial && !ppuc->Connect()) {
     printf("Unable to open serial communication to PPUC boards.\n");
@@ -632,47 +445,6 @@ int main(int argc, char* argv[]) {
   snprintf((char*)config.vpmPath, PINMAME_MAX_PATH, "%s/.pinmame/",
            getenv("HOME"));
 #endif
-
-  if (opt_serum) {
-    int pwidth;
-    int pheight;
-    unsigned int pnocolors;
-    unsigned int pntriggers;
-
-    char tbuf[1024];
-    strcpy(tbuf, config.vpmPath);
-    if ((tbuf[strlen(tbuf) - 1] != '\\') && (tbuf[strlen(tbuf) - 1] != '/')) {
-      strcat(tbuf, "/");
-    }
-    strcat(tbuf, "altcolor");
-
-    bool serum_loaded =
-        Serum_Load(tbuf, opt_rom, &pwidth, &pheight, &pnocolors, &pntriggers);
-    if (serum_loaded) {
-      if (opt_debug) {
-        printf("Serum: loaded %s.cRZ.\n", opt_rom);
-      }
-
-      if (opt_serum_timeout) {
-        uint16_t serum_timeout;
-        std::stringstream st(opt_serum_timeout);
-        st >> serum_timeout;
-        Serum_SetIgnoreUnknownFramesTimeout(serum_timeout);
-      }
-
-      if (opt_serum_skip_frames) {
-        uint8_t serum_skip_frames;
-        std::stringstream ssf(opt_serum_skip_frames);
-        ssf >> serum_skip_frames;
-        Serum_SetMaximumUnknownFramesToSkip(serum_skip_frames);
-      }
-    } else {
-      if (opt_debug) {
-        printf("Serum: %s.cRZ not found.\n", opt_rom);
-      }
-      opt_serum = false;
-    }
-  }
 
   // Initialize the sound device
   const ALCchar* defaultDeviceName =
@@ -708,8 +480,8 @@ int main(int argc, char* argv[]) {
 #endif
 
   if (PinmameRun(opt_rom) == PINMAME_STATUS_OK) {
-    // Pinball machines were slower than modern CPUs. There's no need to update
-    // states too frequently at full speed.
+    // Pinball machines were slower than modern CPUs. There's no need to
+    // update states too frequently at full speed.
     int sleep_us = 1000;
     // Poll I/O boards for events (mainly switches) every 50us.
     int poll_interval_ms = 50;
@@ -752,20 +524,6 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  stop_flag = true;
-  if (t_pin2dmd.joinable()) {
-    t_pin2dmd.join();
-  }
-  if (t_zedmd.joinable()) {
-    t_zedmd.join();
-  }
-  if (t_consoledmd.joinable()) {
-    t_consoledmd.join();
-  }
-  if (t_resetdmd.joinable()) {
-    t_resetdmd.join();
-  }
-
   if (!opt_no_serial) {
     // Close the serial device
     ppuc->Disconnect();
@@ -774,6 +532,8 @@ int main(int argc, char* argv[]) {
   if (device) {
     alcCloseDevice(device);
   }
+
+  delete pDmd;
 
   return 0;
 }

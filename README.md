@@ -21,14 +21,11 @@ under a compatible licence.
 
 PPUC uses
 * [libpinmame](https://github.com/vpinball/pinmame)
-* [libusb](https://libusb.info/)
-* [libserialport](https://github.com/sigrokproject/libserialport)
+* [libdmdutil](https://github.com/vpinball/libdmdutil)
 * [cargs](https://github.com/likle/cargs)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 * [openal-soft](https://github.com/kcat/openal-soft/)
 * [libppuc](https://github.com/PPUC/libppuc)
-* [libzedmd](https://github.com/PPUC/libzedmd)
-* [libserum](https://github.com/zesinger/libserum)
 
 ## Documentation
 
