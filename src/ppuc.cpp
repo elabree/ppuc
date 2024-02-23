@@ -11,6 +11,7 @@
 #include <cstring>
 #include <thread>
 
+#include "DMDUtil/Config.h"
 #include "DMDUtil/ConsoleDMD.h"
 #include "DMDUtil/DMDUtil.h"
 #include "cargs.h"
@@ -182,6 +183,33 @@ void PINMAMECALLBACK OnDisplayUpdated(int index, void* p_displayData,
     pDmd->UpdateData((uint8_t*)p_displayData, p_displayLayout->depth,
                      p_displayLayout->width, p_displayLayout->height, 255, 255,
                      255, opt_rom);
+  } else {
+    switch (p_displayLayout->type) {
+      case PINMAME_DISPLAY_TYPE_SEG16:   // 16 segments
+      case PINMAME_DISPLAY_TYPE_SEG16R:  // 16 segments with comma and period
+                                         // reversed
+      case PINMAME_DISPLAY_TYPE_SEG10:   // 9 segments and comma
+      case PINMAME_DISPLAY_TYPE_SEG9:    // 9 segments
+      case PINMAME_DISPLAY_TYPE_SEG8:    // 7 segments and comma
+      case PINMAME_DISPLAY_TYPE_SEG8D:   // 7 segments and period
+      case PINMAME_DISPLAY_TYPE_SEG7:    // 7 segments
+      case PINMAME_DISPLAY_TYPE_SEG87:   // 7 segments, comma every three
+      case PINMAME_DISPLAY_TYPE_SEG87F:  // 7 segments, forced comma every three
+      case PINMAME_DISPLAY_TYPE_SEG98:   // 9 segments, comma every three
+      case PINMAME_DISPLAY_TYPE_SEG98F:  // 9 segments, forced comma every three
+      case PINMAME_DISPLAY_TYPE_SEG7S:   // 7 segments, small
+      case PINMAME_DISPLAY_TYPE_SEG7SC:  // 7 segments, small, with comma
+      case PINMAME_DISPLAY_TYPE_SEG16S:  // 16 segments with split top and
+                                         // bottom line
+      case PINMAME_DISPLAY_TYPE_SEG16N:  // 16 segments without commas
+      case PINMAME_DISPLAY_TYPE_SEG16D:  // 16 segments with periods only
+        // @todo
+        break;
+
+      case PINMAME_DISPLAY_TYPE_VIDEO:  // VIDEO Display
+        // @todo
+        break;
+    }
   }
 }
 
@@ -397,11 +425,12 @@ int main(int argc, char* argv[]) {
   // ZeDMD messes with USB ports. when searching for the DMD.
   // So it is important to start that search before the RS485 BUS gets
   // initialized.
+  DMDUtil::Config* dmdConfig = DMDUtil::Config::GetInstance();
   pDmd = new DMDUtil::DMD();
   if (opt_debug) {
     printf("Finding displays...\n");
+    dmdConfig->SetZeDMDDebug(opt_debug);
   }
-
   pDmd->FindDisplays();
   if (opt_console_display) {
     pDmd->CreateConsoleDMD(!opt_debug);
@@ -443,6 +472,32 @@ int main(int argc, char* argv[]) {
   snprintf((char*)config.vpmPath, PINMAME_MAX_PATH, "%s/.pinmame/",
            getenv("HOME"));
 #endif
+
+  if (opt_serum) {
+    char altcolorPath[PINMAME_MAX_PATH + 10];
+#if defined(_WIN32) || defined(_WIN64)
+    snprintf(altcolorPath, PINMAME_MAX_PATH + 9, "%s\\altcolor",
+             config.vpmPath);
+#else
+    snprintf(altcolorPath, PINMAME_MAX_PATH + 9, "%s/altcolor", config.vpmPath);
+#endif
+
+    dmdConfig->SetAltColorPath(altcolorPath);
+    dmdConfig->SetAltColor(true);
+
+    if (opt_serum_timeout) {
+      int serum_timeout;
+      std::stringstream st(opt_serum_timeout);
+      st >> serum_timeout;
+      dmdConfig->SetIgnoreUnknownFramesTimeout(serum_timeout);
+    }
+    if (opt_serum_skip_frames) {
+      int serum_skip_frames;
+      std::stringstream ssf(opt_serum_skip_frames);
+      ssf >> serum_skip_frames;
+      dmdConfig->SetMaximumUnknownFramesToSkip(serum_skip_frames);
+    }
+  }
 
   // Initialize the sound device
   const ALCchar* defaultDeviceName =
