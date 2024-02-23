@@ -80,7 +80,7 @@ unzip pinmame.zip
 cd pinmame-${LIBPINMAME_SHA}
 cp src/libpinmame/libpinmame.h ../../third-party/include/
 cp cmake/libpinmame/CMakeLists_osx-x64.txt CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -B build/Release
+cmake -DPPUC_SUPPORT=1 -DCMAKE_BUILD_TYPE=Release -B build/Release
 cmake --build build/Release
 cp build/Release/libpinmame.a ../../third-party/build-libs/macos/x64/
 cp -P build/Release/libpinmame*.dylib ../../third-party/runtime-libs/macos/x64/
