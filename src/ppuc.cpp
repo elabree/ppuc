@@ -4,11 +4,11 @@
 #include <AL/alc.h>
 #include <ctype.h>
 #include <inttypes.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include <chrono>
+#include <cstdio>
+#include <cstring>
 #include <thread>
 
 #include "DMDUtil/ConsoleDMD.h"
@@ -174,16 +174,14 @@ void PINMAMECALLBACK OnDisplayUpdated(int index, void* p_displayData,
         p_displayLayout->depth, p_displayLayout->length);
   }
 
-  switch (p_displayLayout->type) {
-    case PINMAME_DISPLAY_TYPE_VIDEO:
-      break;
-    case PINMAME_DISPLAY_TYPE_DMD:
-      pDmd->UpdateData((uint8_t*)p_displayData, p_displayLayout->depth,
-                       p_displayLayout->width, p_displayLayout->height, 255,
-                       255, 255, opt_rom);
-      break;
-    default:
-      break;
+  // For DMD games, the ype is PINMAME_DISPLAY_TYPE_DMD.
+  // For alphanumeric games that should be shown on a DMD,
+  // the type is PINMAME_DISPLAY_TYPE_DMD | PINMAME_DISPLAY_TYPE_DMDSEG.
+  if ((p_displayLayout->type & PINMAME_DISPLAY_TYPE_DMD) ==
+      PINMAME_DISPLAY_TYPE_DMD) {
+    pDmd->UpdateData((uint8_t*)p_displayData, p_displayLayout->depth,
+                     p_displayLayout->width, p_displayLayout->height, 255, 255,
+                     255, opt_rom);
   }
 }
 
