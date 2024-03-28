@@ -426,26 +426,6 @@ int main(int argc, char* argv[]) {
   // So it is important to start that search before the RS485 BUS gets
   // initialized.
   DMDUtil::Config* dmdConfig = DMDUtil::Config::GetInstance();
-  pDmd = new DMDUtil::DMD();
-  if (opt_debug) {
-    printf("Finding displays...\n");
-    dmdConfig->SetZeDMDDebug(opt_debug);
-  }
-  pDmd->FindDisplays();
-  if (opt_console_display) {
-    pDmd->CreateConsoleDMD(!opt_debug);
-  }
-  if (opt_dump) {
-    pDmd->DumpDMDTxt();
-  }
-
-  while (DMDUtil::DMD::IsFinding())
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-  if (!opt_no_serial && !ppuc->Connect()) {
-    printf("Unable to open serial communication to PPUC boards.\n");
-    return 1;
-  }
 
   PinmameConfig config = {
       PINMAME_AUDIO_FORMAT_INT16,
@@ -476,10 +456,9 @@ int main(int argc, char* argv[]) {
   if (opt_serum) {
     char altcolorPath[PINMAME_MAX_PATH + 10];
 #if defined(_WIN32) || defined(_WIN64)
-    snprintf(altcolorPath, PINMAME_MAX_PATH + 9, "%s\\altcolor",
-             config.vpmPath);
+    snprintf(altcolorPath, PINMAME_MAX_PATH + 8, "%saltcolor", config.vpmPath);
 #else
-    snprintf(altcolorPath, PINMAME_MAX_PATH + 9, "%s/altcolor", config.vpmPath);
+    snprintf(altcolorPath, PINMAME_MAX_PATH + 8, "%saltcolor", config.vpmPath);
 #endif
 
     dmdConfig->SetAltColorPath(altcolorPath);
@@ -497,6 +476,31 @@ int main(int argc, char* argv[]) {
       ssf >> serum_skip_frames;
       dmdConfig->SetMaximumUnknownFramesToSkip(serum_skip_frames);
     }
+  } else {
+    dmdConfig->SetAltColor(false);
+  }
+
+  if (opt_debug) {
+    printf("Finding displays...\n");
+    dmdConfig->SetZeDMDDebug(opt_debug);
+  }
+
+  pDmd = new DMDUtil::DMD();
+  pDmd->SetRomName(opt_rom);
+  pDmd->FindDisplays();
+  if (opt_console_display) {
+    pDmd->CreateConsoleDMD(!opt_debug);
+  }
+  if (opt_dump) {
+    pDmd->DumpDMDTxt();
+  }
+
+  while (pDmd->IsFinding())
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  if (!opt_no_serial && !ppuc->Connect()) {
+    printf("Unable to open serial communication to PPUC boards.\n");
+    return 1;
   }
 
   // Initialize the sound device

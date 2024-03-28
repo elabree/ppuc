@@ -6,7 +6,7 @@ LIBCARGS_SHA=5949a20a926e902931de4a32adaad9f19c76f251
 LIBOPENAL_SHA=d3875f333fb6abe2f39d82caca329414871ae53b
 LIBPINMAME_SHA=master
 LIBPPUC_SHA=main
-LIBDMDUTIL_SHA=master
+LIBDMDUTIL_SHA=3af59032f9fcc0f2ea9462c6d55416cf99ad869e
 
 echo "Building libraries..."
 echo "  LIBCARGS_SHA: ${LIBCARGS_SHA}"
@@ -24,7 +24,7 @@ cd external
 # libdmdutil
 #
 
-curl -sL https://github.com/vpinball/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
+curl -sL https://github.com/ppuc/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
 unzip libdmdutil.zip
 cd libdmdutil-${LIBDMDUTIL_SHA}
 cp -r include/DMDUtil ../../third-party/include/

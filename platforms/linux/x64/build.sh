@@ -4,7 +4,7 @@ set -e
 
 ./platforms/linux/x64/external.sh
 
-cmake -DPLATFORM=linux -DARCH=x64 -DCMAKE_BUILD_TYPE=Release -B build
+cmake -DPLATFORM=linux -DARCH=x64 -DCMAKE_BUILD_TYPE=Debug -B build
 cmake --build build
 
 rm -rf ppuc
