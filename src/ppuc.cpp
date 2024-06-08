@@ -149,6 +149,28 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
   }
 }
 
+void DMDUTILCALLBACK DMDUtilLogCallback(DMDUtil_LogLevel logLevel, const char* format, va_list args)
+{
+  char buffer[1024];
+  vsnprintf(buffer, sizeof(buffer), format, args);
+  uint32_t now =
+      std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())
+          .count();
+
+  if (logLevel == DMDUtil_LogLevel_INFO)
+  {
+    printf("%lu INFO: %s", now, buffer);
+  }
+  else if (logLevel == DMDUtil_LogLevel_DEBUG)
+  {
+    printf("%lu DEBUG: %s\n", now, buffer);
+  }
+  else if (logLevel == DMDUtil_LogLevel_ERROR)
+  {
+    printf("%lu ERROR: %s", now, buffer);
+  }
+}
+
 void PINMAMECALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout,
                                         const void* p_userData)
 {
@@ -482,6 +504,8 @@ int main(int argc, char* argv[])
     snprintf(altcolorPath, PINMAME_MAX_PATH + 8, "%saltcolor", config.vpmPath);
 #endif
 
+    dmdConfig->SetLogCallback(DMDUtilLogCallback);
+    dmdConfig->SetLogLevel(DMDUtil_LogLevel_DEBUG);
     dmdConfig->SetAltColorPath(altcolorPath);
     dmdConfig->SetAltColor(true);
 

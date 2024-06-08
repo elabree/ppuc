@@ -2,9 +2,13 @@
 
 set -e
 
-./platforms/macos/arm64/external.sh
+if [ -z "${BUILD_TYPE}" ]; then
+   BUILD_TYPE="Release"
+fi
 
-cmake -DPLATFORM=macos -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build
+BUILD_TYPE=${BUILD_TYPE} ./platforms/macos/arm64/external.sh
+
+cmake -DPLATFORM=macos -DARCH=arm64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build
 
 rm -rf ppuc

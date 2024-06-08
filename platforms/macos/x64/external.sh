@@ -2,11 +2,13 @@
 
 set -e
 
-LIBCARGS_SHA=5949a20a926e902931de4a32adaad9f19c76f251
+LIBCARGS_SHA=6535721d9f3373cf8f37df4df62957e14620d4d5
 LIBOPENAL_SHA=d3875f333fb6abe2f39d82caca329414871ae53b
-LIBPINMAME_SHA=master
-LIBPPUC_SHA=main
-LIBDMDUTIL_SHA=3af59032f9fcc0f2ea9462c6d55416cf99ad869e
+LIBPINMAME_SHA=74040732a4ab209edfcbaaee79d73d6608456da6
+LIBPPUC_SHA=ad4af67c58dd214e34a630b4503d1b751be50b38
+LIBDMDUTIL_SHA=15d64aaa7ee4ea26d88f6fa9b5ffdbde999f5055
+
+NUM_PROCS=$(nproc)
 
 echo "Building libraries..."
 echo "  LIBCARGS_SHA: ${LIBCARGS_SHA}"
@@ -16,88 +18,126 @@ echo "  LIBPPUC_SHA: ${LIBPPUC_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo ""
 
-rm -rf external
-mkdir external
+if [ -z "${BUILD_TYPE}" ]; then
+   BUILD_TYPE="Release"
+fi
+
+if [ -z "${CACHE_DIR}" ]; then
+   CACHE_DIR="external/cache/${BUILD_TYPE}"
+fi
+
+echo "Build type: ${BUILD_TYPE}"
+echo "Cache dir: ${CACHE_DIR}"
+echo "Procs: ${NUM_PROCS}"
+echo ""
+
+mkdir -p external ${CACHE_DIR}
 cd external
 
 #
 # libdmdutil
 #
 
-curl -sL https://github.com/ppuc/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
-unzip libdmdutil.zip
-cd libdmdutil-${LIBDMDUTIL_SHA}
-cp -r include/DMDUtil ../../third-party/include/
-platforms/macos/x64/external.sh
-rsync -a third-party/ ../../third-party
-cmake -DPLATFORM=macos -DARCH=x64 -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
-cp build/*.a ../../third-party/build-libs/macos/x64/
-cp -P build/*.dylib ../../third-party/runtime-libs/macos/x64/
-cd ..
+CACHE_NAME="libdmdutil-${LIBDMDUTIL_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+    rm -f ../${CACHE_DIR}/libdmdutil-*.cache
+    rm -rf libdmdutil-*
+    curl -sL https://github.com/PPUC/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
+    unzip libdmdutil.zip
+    cd libdmdutil-${LIBDMDUTIL_SHA}
+    cp -r include/DMDUtil ../../third-party/include/
+    BUILD_TYPE=${BUILD_TYPE} platforms/macos/x64/external.sh
+    rsync -a third-party/ ../../third-party
+    cmake -DPLATFORM=macos -DARCH=x64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
+    cmake --build build -- -j${NUM_PROCS}
+    cp -P build/*.dylib ../../third-party/runtime-libs/macos/x64/
+    cd ..
+    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
 
 #
 # libcargs
 #
 
-curl -sL https://github.com/likle/cargs/archive/${LIBCARGS_SHA}.zip -o cargs.zip
-unzip cargs.zip
-cd cargs-${LIBCARGS_SHA}
-cp include/cargs.h ../../third-party/include/
-mkdir build
-cd build
-cmake ..
-make
-cp libcargs.a ../../../third-party/build-libs/macos/x64/
-cmake -DBUILD_SHARED_LIBS=ON ..
-make
-cp -P libcargs*.dylib ../../../third-party/runtime-libs/macos/x64/
-cd ../..
+CACHE_NAME="cargs-${LIBCARGS_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+    rm -f ../${CACHE_DIR}/cargs-*.cache
+    rm -rf cargs-*
+    curl -sL https://github.com/likle/cargs/archive/${LIBCARGS_SHA}.zip -o cargs.zip
+    unzip cargs.zip
+    cd cargs-${LIBCARGS_SHA}
+    cmake \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+    cmake --build build -- -j${NUM_PROCS}
+    cp include/cargs.h ../../third-party/include/
+    cp -a build/*.dylib ../../third-party/runtime-libs/macos/x64/
+    cd ..
+    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
 
 #
 # libopenal
 #
 
-curl -sL https://github.com/kcat/openal-soft/archive/${LIBOPENAL_SHA}.zip -o openal-soft.zip
-unzip openal-soft
-cd openal-soft-${LIBOPENAL_SHA}
-cp -r include/AL ../../third-party/include/
-cmake -DCMAKE_BUILD_TYPE=Release -DLIBTYPE=STATIC -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
-cmake --build build
-cp build/libopenal.a ../../third-party/build-libs/macos/x64/
-rm -rf build
-cmake -DCMAKE_BUILD_TYPE=Release -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
-cmake --build build
-cp -P build/libopenal*.dylib ../../third-party/runtime-libs/macos/x64/
-cd ..
+CACHE_NAME="openal-soft-${LIBOPENAL_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+    rm -f ../${CACHE_DIR}/openal-soft-*.cache
+    rm -rf openal-soft-*
+    curl -sL https://github.com/kcat/openal-soft/archive/${LIBOPENAL_SHA}.zip -o openal-soft.zip
+    unzip openal-soft
+    cd openal-soft-${LIBOPENAL_SHA}
+    cp -r include/AL ../../third-party/include/
+    cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
+    cmake --build build -- -j${NUM_PROCS}
+    cp -P build/libopenal*.dylib ../../third-party/runtime-libs/macos/x64/
+    cd ..
+    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
 
 #
 # libpiname
 #
 
-curl -sL https://github.com/vpinball/pinmame/archive/${LIBPINMAME_SHA}.zip -o pinmame.zip
-unzip pinmame.zip
-cd pinmame-${LIBPINMAME_SHA}
-cp src/libpinmame/libpinmame.h ../../third-party/include/
-cp cmake/libpinmame/CMakeLists_osx-x64.txt CMakeLists.txt
-cmake -DPPUC_SUPPORT=1 -DCMAKE_BUILD_TYPE=Release -B build/Release
-cmake --build build/Release
-cp build/Release/libpinmame.a ../../third-party/build-libs/macos/x64/
-cp -P build/Release/libpinmame*.dylib ../../third-party/runtime-libs/macos/x64/
-cd ..
+CACHE_NAME="pinmame-${LIBPINMAME_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+    rm -f ../${CACHE_DIR}/pinmame-*.cache
+    rm -rf pinmame-*
+    curl -sL https://github.com/vpinball/pinmame/archive/${LIBPINMAME_SHA}.zip -o pinmame.zip
+    unzip pinmame.zip
+    cd pinmame-${LIBPINMAME_SHA}
+    cp src/libpinmame/libpinmame.h ../../third-party/include/
+    cp cmake/libpinmame/CMakeLists_osx-x64.txt CMakeLists.txt
+    cmake -DPPUC_SUPPORT=1 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
+    cmake --build build -- -j${NUM_PROCS}
+    cp -P build/libpinmame*.dylib ../../third-party/runtime-libs/macos/x64/
+    cd ..
+    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
 
 #
 # libppuc
 #
 
-curl -sL https://github.com/PPUC/libppuc/archive/${LIBPPUC_SHA}.zip -o libppuc.zip
-unzip libppuc.zip
-cd libppuc-${LIBPPUC_SHA}
-cp src/PPUC.h ../../third-party/include/
-platforms/macos/x64/external.sh
-rsync -a third-party/ ../../third-party
-cmake -DPLATFORM=macos -DARCH=x64 -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build
-cp build/libppuc.a ../../third-party/build-libs/macos/x64/
-cp -P build/libppuc*.dylib ../../third-party/runtime-libs/macos/x64/
-cd ..
+CACHE_NAME="libppuc-${LIBPPUC_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+    rm -f ../${CACHE_DIR}/libppuc-*.cache
+    rm -rf libppuc-*
+    curl -sL https://github.com/PPUC/libppuc/archive/${LIBPPUC_SHA}.zip -o libppuc.zip
+    unzip libppuc.zip
+    cd libppuc-${LIBPPUC_SHA}
+    cp src/PPUC.h ../../third-party/include/
+    BUILD_TYPE=${BUILD_TYPE} platforms/macos/x64/external.sh
+    rsync -a third-party/ ../../third-party
+    cmake -DPLATFORM=macos -DARCH=x64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
+    cmake --build build -- -j${NUM_PROCS}
+    cp -P build/libppuc*.dylib ../../third-party/runtime-libs/macos/x64/
+    cd ..
+    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi

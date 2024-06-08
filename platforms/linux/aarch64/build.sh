@@ -2,9 +2,13 @@
 
 set -e
 
-./platforms/linux/aarch64/external.sh
+if [ -z "${BUILD_TYPE}" ]; then
+   BUILD_TYPE="Release"
+fi
 
-cmake -DPLATFORM=linux -DARCH=aarch64 -DCMAKE_BUILD_TYPE=Release -B build
+BUILD_TYPE=${BUILD_TYPE} ./platforms/linux/aarch64/external.sh
+
+cmake -DPLATFORM=linux -DARCH=aarch64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build
 
 rm -rf ppuc
