@@ -8,7 +8,7 @@ LIBPINMAME_SHA=74040732a4ab209edfcbaaee79d73d6608456da6
 LIBPPUC_SHA=ad4af67c58dd214e34a630b4503d1b751be50b38
 LIBDMDUTIL_SHA=15d64aaa7ee4ea26d88f6fa9b5ffdbde999f5055
 
-NUM_PROCS=$(nproc)
+NUM_PROCS=$(sysctl -n hw.ncpu)
 
 echo "Building libraries..."
 echo "  LIBCARGS_SHA: ${LIBCARGS_SHA}"
