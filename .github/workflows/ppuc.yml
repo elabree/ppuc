@@ -63,7 +63,7 @@ jobs:
       - if: (matrix.platform == 'macos')
         name: Add autoconf and automake (mac runner)
         run: |
-           brew install autoconf automake gcc-aarch64-embedded aarch64-elf-gcc
+           brew install autoconf automake gcc-aarch64-embedded aarch64-elf-gcc libtool
       - if: (!(matrix.platform == 'linux' && matrix.arch == 'aarch64'))
         name: Build ppuc-${{ matrix.platform }}-${{ matrix.arch }}
         run: |
