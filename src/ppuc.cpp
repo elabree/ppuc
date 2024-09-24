@@ -33,6 +33,9 @@ DMDUtil::DMD* pDmd;
 PPUC* ppuc;
 
 bool opt_debug = false;
+bool opt_debug_switches = false;
+bool opt_debug_coils = false;
+bool opt_debug_lamps = false;
 bool opt_no_serial = false;
 bool opt_serum = false;
 bool opt_pup = false;
@@ -93,7 +96,19 @@ static struct cag_option options[] = {
      .access_letters = "d",
      .access_name = "debug",
      .value_name = NULL,
-     .description = "Enable debug output (optional)"},
+     .description = "Enable all debug output (optional)"},
+    {.identifier = 'S',
+     .access_name = "debug-switches",
+     .value_name = NULL,
+     .description = "Enable switches debug output (optional)"},
+    {.identifier = 'C',
+     .access_name = "debug-coils",
+     .value_name = NULL,
+     .description = "Enable coils debug output (optional)"},
+    {.identifier = 'L',
+     .access_name = "debug-lamps",
+     .value_name = NULL,
+     .description = "Enable lamps debug output (optional)"},
     {.identifier = 'h', .access_letters = "h", .access_name = "help", .description = "Show help"}};
 
 void PINMAMECALLBACK Game(PinmameGame* game)
@@ -333,7 +348,7 @@ int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* p_us
 
 void PINMAMECALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, const void* p_userData)
 {
-  if (opt_debug)
+  if (opt_debug || opt_debug_coils)
   {
     printf("OnSolenoidUpdated: solenoid=%d, state=%d\n", p_solenoidState->solNo, p_solenoidState->state);
   }
@@ -421,6 +436,15 @@ int main(int argc, char* argv[])
         break;
       case 'd':
         opt_debug = true;
+        break;
+      case 'S':
+        opt_debug_switches = true;
+        break;
+      case 'C':
+        opt_debug_coils = true;
+        break;
+      case 'L':
+        opt_debug_lamps = true;
         break;
       case 'h':
         printf("Usage: ppuc [OPTION]...\n");
@@ -623,11 +647,18 @@ int main(int argc, char* argv[])
         PPUCSwitchState* switchState;
         while ((switchState = ppuc->GetNextSwitchState()) != nullptr)
         {
-          if (opt_debug)
+          if (opt_debug || opt_debug_switches)
           {
             printf("Switch updated: #%d, %d\n", switchState->number, switchState->state);
           }
-          PinmameSetSwitch(switchState->number, switchState->state);
+
+          // Switches between 200 and 240 are custom switches within the io-boards which should not be sent to pinmame.
+          // Switches above 240 will become negative values, for example 243 => -3.
+          if (switchState->number < 200 || switchState->number > 241)
+          {
+            int switchNumber = (switchState->number < 241) ? switchState->number : 240 - switchState->number;
+            PinmameSetSwitch(switchNumber, switchState->state);
+          }
         };
       }
 
@@ -637,7 +668,7 @@ int main(int argc, char* argv[])
         uint16_t lampNo = changedLampStates[c].lampNo;
         uint8_t lampState = changedLampStates[c].state == 0 ? 0 : 1;
 
-        if (opt_debug)
+        if (opt_debug || opt_debug_lamps)
         {
           printf("Lamp updated: #%d, %d\n", lampNo, lampState);
         }
