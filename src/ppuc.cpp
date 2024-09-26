@@ -37,6 +37,7 @@ bool opt_debug_switches = false;
 bool opt_debug_coils = false;
 bool opt_debug_lamps = false;
 bool opt_no_serial = false;
+bool opt_no_sound = false;
 bool opt_serum = false;
 bool opt_pup = false;
 bool opt_console_display = false;
@@ -64,6 +65,7 @@ static struct cag_option options[] = {
      .access_name = "no-serial",
      .value_name = NULL,
      .description = "No serial communication to controllers (optional)"},
+    {.identifier = 'M', .access_name = "no-sound", .value_name = NULL, .description = "Turn off sound (optional)"},
     {.identifier = 'u',
      .access_letters = "u",
      .access_name = "serum",
@@ -290,6 +292,8 @@ int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* 
 
 int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* p_userData)
 {
+  if (opt_no_sound) return 0;
+
   if (_audioQueue.size() >= MAX_AUDIO_QUEUE_SIZE)
   {
     while (!_audioQueue.empty())
@@ -415,6 +419,9 @@ int main(int argc, char* argv[])
         break;
       case 'n':
         opt_no_serial = true;
+        break;
+      case 'M':
+        opt_no_sound = true;
         break;
       case 'u':
         opt_serum = true;
@@ -585,25 +592,29 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  // Initialize the sound device
-  const ALCchar* defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-  ALCdevice* device = alcOpenDevice(defaultDeviceName);
-  if (!device)
+  ALCdevice* device;
+  if (!opt_no_sound)
   {
-    printf("failed to alcOpenDevice for %s\n", defaultDeviceName);
-    return 1;
-  }
+    // Initialize the sound device
+    const ALCchar* defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+    device = alcOpenDevice(defaultDeviceName);
+    if (!device)
+    {
+      printf("failed to alcOpenDevice for %s\n", defaultDeviceName);
+      return 1;
+    }
 
-  ALCcontext* context = alcCreateContext(device, NULL);
-  if (!context)
-  {
-    printf("failed call to alcCreateContext\n");
-    return 1;
-  }
+    ALCcontext* context = alcCreateContext(device, NULL);
+    if (!context)
+    {
+      printf("failed call to alcCreateContext\n");
+      return 1;
+    }
 
-  alcMakeContextCurrent(context);
-  alGenSources((ALuint)1, &_audioSource);
-  alGenBuffers(MAX_AUDIO_BUFFERS, _audioBuffers);
+    alcMakeContextCurrent(context);
+    alGenSources((ALuint)1, &_audioSource);
+    alGenBuffers(MAX_AUDIO_BUFFERS, _audioBuffers);
+  }
 
   PinmameSetConfig(&config);
 
