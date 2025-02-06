@@ -30,7 +30,7 @@ elseif(PLATFORM STREQUAL "macos")
    endif()
    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
    set(CMAKE_INSTALL_RPATH "@executable_path")
-elseif(PLATFORM STREQUAL "linux" OR PLATFORM STREQUAL "android")
+elseif(PLATFORM STREQUAL "linux")
    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
    set(CMAKE_INSTALL_RPATH "$ORIGIN")
 endif()
@@ -49,14 +49,40 @@ target_include_directories(ppuc_pinmame PUBLIC
    third-party/include
 )
 
-target_link_directories(ppuc_pinmame PUBLIC
-   third-party/runtime-libs/${PLATFORM}/${ARCH}
-)
+if(PLATFORM STREQUAL "win")
+   target_link_directories(ppuc_pinmame PUBLIC
+      third-party/build-libs/${PLATFORM}/${ARCH}
+      third-party/runtime-libs/${PLATFORM}/${ARCH}
+   )
+   if(ARCH STREQUAL "x64")
+      target_link_libraries(ppuc_pinmame LINK_PUBLIC
+         pinmame64
+         ppuc64
+         dmdutil64
+         openal
+         cargs64
+         ws2_32
+      )
+   else()
+      target_link_libraries(ppuc_pinmame LINK_PUBLIC
+         pinmame
+         ppuc
+         dmdutil
+         openal
+         cargs
+         ws2_32
+      )
+   endif()
+else()
+   target_link_directories(ppuc_pinmame PUBLIC
+      third-party/runtime-libs/${PLATFORM}/${ARCH}
+   )
 
-target_link_libraries(ppuc_pinmame LINK_PUBLIC
-   pinmame
-   ppuc
-   dmdutil
-   openal
-   cargs
-)
+   target_link_libraries(ppuc_pinmame LINK_PUBLIC
+      pinmame
+      ppuc
+      dmdutil
+      openal
+      cargs
+   )
+endif()

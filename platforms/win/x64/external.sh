@@ -56,6 +56,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     cp build/${BUILD_TYPE}/dmdutil64.dll ../../third-party/runtime-libs/win/x64/
     cd ..
     touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
 
 #
 # libpiname
