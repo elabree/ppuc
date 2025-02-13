@@ -4,7 +4,7 @@ set -e
 
 LIBOPENAL_SHA=d3875f333fb6abe2f39d82caca329414871ae53b
 LIBPINMAME_SHA=c69f68aca1fe28d5bb65ab10a17c09fb2593d57b
-LIBPPUC_SHA=3452226d63c35ad5b533d546dac1b9abf4dbf47e
+LIBPPUC_SHA=2bb464dd10e37649e0ec3321edfaf71b4c1d3216
 LIBDMDUTIL_SHA=5afd52cae1a7ac2f5e86722045da47ec3e876708
 
 NUM_PROCS=$(nproc)
@@ -108,6 +108,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     unzip libppuc.zip
     cd libppuc-${LIBPPUC_SHA}
     cp src/PPUC.h ../../third-party/include/
+    cp src/PPUC_structs.h ../../third-party/include/
     BUILD_TYPE=${BUILD_TYPE} platforms/linux/aarch64/external.sh
     rsync -a third-party/ ../../third-party
     cmake -DPLATFORM=linux -DARCH=aarch64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build

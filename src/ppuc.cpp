@@ -114,8 +114,8 @@ static struct cag_option options[] = {
      .access_name = "debug-lamps",
      .value_name = NULL,
      .description = "Enable lamps debug output (optional)"},
-    {.identifier = '0', .access_name = "switch-test", .value_name = NULL, .description = "Run lamp test"},
-    {.identifier = '1', .access_name = "coil-test", .value_name = NULL, .description = "Run lamp test"},
+    {.identifier = '0', .access_name = "switch-test", .value_name = NULL, .description = "Run switch test"},
+    {.identifier = '1', .access_name = "coil-test", .value_name = NULL, .description = "Run coil test"},
     {.identifier = '2', .access_name = "lamp-test", .value_name = NULL, .description = "Run lamp test"},
     {.identifier = 'h', .access_letters = "h", .access_name = "help", .description = "Show help"}};
 
