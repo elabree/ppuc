@@ -8,7 +8,7 @@ fi
 
 BUILD_TYPE=${BUILD_TYPE} ./platforms/win/x64/external.sh
 
-cmake -DPLATFORM=win -DARCH=x64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
+cmake -G "Visual Studio 17 2022" -DPLATFORM=win -DARCH=x64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
 cmake --build build
 
 rm -rf ppuc
