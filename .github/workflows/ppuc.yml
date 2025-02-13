@@ -58,7 +58,6 @@ jobs:
         name: Install required packages for Windows
         run: |
           choco install -y mingw
-          echo "::add-path::C:\\tools\\mingw64\\bin"
       - if: (matrix.platform == 'win')
         name: Add msbuild to path (win runner)
         uses: microsoft/setup-msbuild@v2
