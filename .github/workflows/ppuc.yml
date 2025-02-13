@@ -59,7 +59,7 @@ jobs:
         run: sudo apt install autoconf libtool libudev-dev libpipewire-0.3-dev
       - if: (matrix.platform == 'win')
         name: Add msbuild to path (win runner)
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v2
       - if: (matrix.platform == 'macos')
         name: Add autoconf and automake (mac runner)
         run: |

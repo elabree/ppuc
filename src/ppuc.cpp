@@ -237,29 +237,42 @@ void PINMAMECALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDis
   {
     switch (p_displayLayout->type)
     {
-      case PINMAME_DISPLAY_TYPE_SEG16:   // 16 segments
-      case PINMAME_DISPLAY_TYPE_SEG16R:  // 16 segments with comma and period
-                                         // reversed
-      case PINMAME_DISPLAY_TYPE_SEG10:   // 9 segments and comma
-      case PINMAME_DISPLAY_TYPE_SEG9:    // 9 segments
-      case PINMAME_DISPLAY_TYPE_SEG8:    // 7 segments and comma
-      case PINMAME_DISPLAY_TYPE_SEG8D:   // 7 segments and period
-      case PINMAME_DISPLAY_TYPE_SEG7:    // 7 segments
-      case PINMAME_DISPLAY_TYPE_SEG87:   // 7 segments, comma every three
-      case PINMAME_DISPLAY_TYPE_SEG87F:  // 7 segments, forced comma every three
-      case PINMAME_DISPLAY_TYPE_SEG98:   // 9 segments, comma every three
-      case PINMAME_DISPLAY_TYPE_SEG98F:  // 9 segments, forced comma every three
-      case PINMAME_DISPLAY_TYPE_SEG7S:   // 7 segments, small
-      case PINMAME_DISPLAY_TYPE_SEG7SC:  // 7 segments, small, with comma
-      case PINMAME_DISPLAY_TYPE_SEG16S:  // 16 segments with split top and
-                                         // bottom line
-      case PINMAME_DISPLAY_TYPE_SEG16N:  // 16 segments without commas
-      case PINMAME_DISPLAY_TYPE_SEG16D:  // 16 segments with periods only
-        // @todo
+      case PINMAME_DISPLAY_TYPE_SEG16:    // 16 segments
+      case PINMAME_DISPLAY_TYPE_SEG16R:   // 16 segments with comma and period
+                                          // reversed
+      case PINMAME_DISPLAY_TYPE_SEG10:    // 9 segments and comma
+      case PINMAME_DISPLAY_TYPE_SEG9:     // 9 segments
+      case PINMAME_DISPLAY_TYPE_SEG8:     // 7 segments and comma
+      case PINMAME_DISPLAY_TYPE_SEG8D:    // 7 segments and period
+      case PINMAME_DISPLAY_TYPE_SEG7:     // 7 segments
+      case PINMAME_DISPLAY_TYPE_SEG87:    // 7 segments, comma every three
+      case PINMAME_DISPLAY_TYPE_SEG87F:   // 7 segments, forced comma every three
+      case PINMAME_DISPLAY_TYPE_SEG98:    // 9 segments, comma every three
+      case PINMAME_DISPLAY_TYPE_SEG98F:   // 9 segments, forced comma every three
+      case PINMAME_DISPLAY_TYPE_SEG7S:    // 7 segments, small
+      case PINMAME_DISPLAY_TYPE_SEG7SC:   // 7 segments, small, with comma
+      case PINMAME_DISPLAY_TYPE_SEG16S:   // 16 segments with split top and
+                                          // bottom line
+      case PINMAME_DISPLAY_TYPE_SEG16N:   // 16 segments without commas
+      case PINMAME_DISPLAY_TYPE_SEG16D:   // 16 segments with periods only
+      case PINMAME_DISPLAY_TYPE_SEGALL:   // maximum segment definition number
+      case PINMAME_DISPLAY_TYPE_IMPORT:   // Link to another display layout
+      case PINMAME_DISPLAY_TYPE_SEGMASK:  // Note that CORE_IMPORT must be part of the segmask as well!
         break;
 
       case PINMAME_DISPLAY_TYPE_VIDEO:  // VIDEO Display
         // @todo
+        break;
+
+      case PINMAME_DISPLAY_TYPE_DMD:     // DMD Display
+      case PINMAME_DISPLAY_TYPE_DMDSEG:  // @todo
+        // handled above, just surpress a warning of missing cases here.
+        break;
+
+      case PINMAME_DISPLAY_TYPE_SEGHIBIT:
+      case PINMAME_DISPLAY_TYPE_SEGREV:
+      case PINMAME_DISPLAY_TYPE_DMDNOAA:
+      case PINMAME_DISPLAY_TYPE_NODISP:
         break;
     }
   }

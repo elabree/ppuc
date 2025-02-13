@@ -67,7 +67,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     unzip openal-soft
     cd openal-soft-${LIBOPENAL_SHA}
     cp -r include/AL ../../third-party/include/
-    cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
+    cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_OSX_ARCHITECTURES=x86_64 -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
     cmake --build build -- -j${NUM_PROCS}
     cp -P build/libopenal*.dylib ../../third-party/runtime-libs/macos/x64/
     cd ..
