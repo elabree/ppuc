@@ -49,8 +49,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
-      -DBUILD_SHARED=ON \
-      -DBUILD_STATIC=OFF \
+      -DBUILD_SHARED=OFF \
+      -DBUILD_STATIC=ON \
       -B build
     cmake --build build --config ${BUILD_TYPE}
     cp build/${BUILD_TYPE}/dmdutil.lib ../../third-party/build-libs/win/x86/
@@ -78,8 +78,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
-      -DBUILD_SHARED=ON \
-      -DBUILD_STATIC=OFF \
+      -DBUILD_SHARED=OFF \
+      -DBUILD_STATIC=ON \
       -B build
     cmake --build build --config ${BUILD_TYPE}
     cp build/${BUILD_TYPE}/pinmame.lib ../../third-party/build-libs/win/x86/
@@ -109,8 +109,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
-      -DBUILD_SHARED=ON \
-      -DBUILD_STATIC=OFF \
+      -DBUILD_SHARED=OFF \
+      -DBUILD_STATIC=ON \
       -B build
     cmake --build build --config ${BUILD_TYPE}
     cp build/${BUILD_TYPE}/ppuc.lib ../../third-party/build-libs/win/x86/

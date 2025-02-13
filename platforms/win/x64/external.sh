@@ -48,8 +48,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -G "Visual Studio 17 2022" \
       -DPLATFORM=win \
       -DARCH=x64 \
-      -DBUILD_SHARED=ON \
-      -DBUILD_STATIC=OFF \
+      -DBUILD_SHARED=OFF \
+      -DBUILD_STATIC=ON \
       -B build
     cmake --build build --config ${BUILD_TYPE}
     cp build/${BUILD_TYPE}/dmdutil64.lib ../../third-party/build-libs/win/x64/
@@ -76,8 +76,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -G "Visual Studio 17 2022" \
       -DPLATFORM=win \
       -DARCH=x64 \
-      -DBUILD_SHARED=ON \
-      -DBUILD_STATIC=OFF \
+      -DBUILD_SHARED=OFF \
+      -DBUILD_STATIC=ON \
       -B build
     cmake --build build --config ${BUILD_TYPE}
     cp build/${BUILD_TYPE}/pinmame64.lib ../../third-party/build-libs/win/x64/
@@ -106,8 +106,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -G "Visual Studio 17 2022" \
       -DPLATFORM=win \
       -DARCH=x64 \
-      -DBUILD_SHARED=ON \
-      -DBUILD_STATIC=OFF \
+      -DBUILD_SHARED=OFF \
+      -DBUILD_STATIC=ON \
       -B build
     cmake --build build --config ${BUILD_TYPE}
     cp build/${BUILD_TYPE}/ppuc64.lib ../../third-party/build-libs/win/x64/
