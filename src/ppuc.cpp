@@ -42,6 +42,9 @@ bool opt_serum = false;
 bool opt_pup = false;
 bool opt_console_display = false;
 const char* opt_rom = NULL;
+bool opt_switch_test = false;
+bool opt_coil_test = false;
+bool opt_lamp_test = false;
 int game_state = 0;
 
 static struct cag_option options[] = {
@@ -111,6 +114,9 @@ static struct cag_option options[] = {
      .access_name = "debug-lamps",
      .value_name = NULL,
      .description = "Enable lamps debug output (optional)"},
+    {.identifier = '0', .access_name = "switch-test", .value_name = NULL, .description = "Run lamp test"},
+    {.identifier = '1', .access_name = "coil-test", .value_name = NULL, .description = "Run lamp test"},
+    {.identifier = '2', .access_name = "lamp-test", .value_name = NULL, .description = "Run lamp test"},
     {.identifier = 'h', .access_letters = "h", .access_name = "help", .description = "Show help"}};
 
 void PINMAMECALLBACK Game(PinmameGame* game)
@@ -453,6 +459,15 @@ int main(int argc, char* argv[])
       case 'L':
         opt_debug_lamps = true;
         break;
+      case '0':
+        opt_switch_test = true;
+        break;
+      case '1':
+        opt_coil_test = true;
+        break;
+      case '2':
+        opt_lamp_test = true;
+        break;
       case 'h':
         printf("Usage: ppuc [OPTION]...\n");
         cag_option_print(options, CAG_ARRAY_SIZE(options), stdout);
@@ -494,6 +509,34 @@ int main(int argc, char* argv[])
   {
     // opt_serial will be ignored by ZeDMD later.
     opt_serial = ppuc->GetSerial();
+  }
+
+  if (opt_switch_test || opt_coil_test || opt_lamp_test)
+  {
+    if (!ppuc->Connect())
+    {
+      printf("Unable to open serial communication to PPUC boards.\n");
+      return 1;
+    }
+
+    if (opt_lamp_test)
+    {
+      ppuc->LampTest();
+    }
+
+    if (opt_coil_test)
+    {
+      ppuc->CoilTest();
+    }
+
+    if (opt_switch_test)
+    {
+      ppuc->SwitchTest();
+    }
+
+    ppuc->Disconnect();
+
+    return 0;
   }
 
   // Initialize displays.
@@ -670,7 +713,7 @@ int main(int argc, char* argv[])
             int switchNumber = (switchState->number < 241) ? switchState->number : 240 - switchState->number;
             PinmameSetSwitch(switchNumber, switchState->state);
           }
-        };
+        }
       }
 
       int count = PinmameGetChangedLamps(changedLampStates);
