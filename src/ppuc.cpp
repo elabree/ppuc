@@ -421,10 +421,10 @@ int main(int argc, char* argv[])
   const char* opt_serum_skip_frames = NULL;
   bool opt_dump = false;
 
-  cag_option_prepare(&cag_context, options, CAG_ARRAY_SIZE(options), argc, argv);
+  cag_option_init(&cag_context, options, CAG_ARRAY_SIZE(options), argc, argv);
   while (cag_option_fetch(&cag_context))
   {
-    identifier = cag_option_get(&cag_context);
+    identifier = cag_option_get_identifier(&cag_context);
     switch (identifier)
     {
       case 'c':

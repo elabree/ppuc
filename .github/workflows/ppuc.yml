@@ -55,10 +55,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - if: (matrix.platform == 'win')
-        name: Install required packages for Windows
-        run: |
-          choco install -y mingw
-      - if: (matrix.platform == 'win')
         name: Add msbuild to path (win runner)
         uses: microsoft/setup-msbuild@v2
       - if: (matrix.platform == 'macos')
