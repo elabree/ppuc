@@ -46,7 +46,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     cd libdmdutil-${LIBDMDUTIL_SHA}
     cp -r include/DMDUtil ../../third-party/include/
     BUILD_TYPE=${BUILD_TYPE} platforms/macos/arm64/external.sh
-    rsync -a third-party/ ../../third-party
+    cp -a third-party/ ../../third-party
     cmake -DPLATFORM=macos -DARCH=arm64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
     cmake --build build -- -j${NUM_PROCS}
     cp -P build/*.dylib ../../third-party/runtime-libs/macos/arm64/
@@ -110,7 +110,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     cp src/PPUC.h ../../third-party/include/
     cp src/PPUC_structs.h ../../third-party/include/
     BUILD_TYPE=${BUILD_TYPE} platforms/macos/arm64/external.sh
-    rsync -a third-party/ ../../third-party
+    cp -a third-party/ ../../third-party
     cmake -DPLATFORM=macos -DARCH=arm64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
     cmake --build build -- -j${NUM_PROCS}
     cp -P build/libppuc*.dylib ../../third-party/runtime-libs/macos/arm64/
