@@ -43,7 +43,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     cd libdmdutil-${LIBDMDUTIL_SHA}
     cp -r include/DMDUtil ../../third-party/include/
     BUILD_TYPE=${BUILD_TYPE} platforms/win/x64/external.sh
-    cp -a third-party/ ../../third-party
+    cp -a third-party/. ../../third-party
     cmake \
       -G "Visual Studio 17 2022" \
       -DPLATFORM=win \
@@ -101,7 +101,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     cp src/PPUC.h ../../third-party/include/
     cp src/PPUC_structs.h ../../third-party/include/
     BUILD_TYPE=${BUILD_TYPE} platforms/win/x64/external.sh
-    cp -a third-party/ ../../third-party
+    cp -a third-party/. ../../third-party
     cmake \
       -G "Visual Studio 17 2022" \
       -DPLATFORM=win \
