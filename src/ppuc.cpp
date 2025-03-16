@@ -14,6 +14,8 @@
 #include "DMDUtil/Config.h"
 #include "DMDUtil/ConsoleDMD.h"
 #include "DMDUtil/DMDUtil.h"
+#include "SDL3/SDL.h"
+#include "SDL3_image/SDL_image.h"
 #include "cargs.h"
 #include "io-boards/Event.h"
 #include "libpinmame.h"
@@ -32,6 +34,11 @@ int _audioSampleRate;
 DMDUtil::DMD* pDmd;
 PPUC* ppuc;
 
+SDL_Window* pWindow;
+SDL_Renderer* pRenderer;
+SDL_Texture* pTransliteTexture;
+SDL_Texture* pTransliteAttractTexture;
+
 bool opt_debug = false;
 bool opt_debug_switches = false;
 bool opt_debug_coils = false;
@@ -42,9 +49,6 @@ bool opt_serum = false;
 bool opt_pup = false;
 bool opt_console_display = false;
 const char* opt_rom = NULL;
-bool opt_switch_test = false;
-bool opt_coil_test = false;
-bool opt_lamp_test = false;
 int game_state = 0;
 
 static struct cag_option options[] = {
@@ -117,6 +121,30 @@ static struct cag_option options[] = {
     {.identifier = '0', .access_name = "switch-test", .value_name = NULL, .description = "Run switch test"},
     {.identifier = '1', .access_name = "coil-test", .value_name = NULL, .description = "Run coil test"},
     {.identifier = '2', .access_name = "lamp-test", .value_name = NULL, .description = "Run lamp test"},
+    {.identifier = 'D',
+     .access_name = "translite",
+     .value_name = "VALUE",
+     .description = "Translite file, only used for game in play if a attract mode translite is set as well"},
+    {.identifier = 'E',
+     .access_name = "translite-attract",
+     .value_name = "VALUE",
+     .description = "Translite file for attract mode"},
+    {.identifier = 'F',
+     .access_name = "translite-window",
+     .value_name = NULL,
+     .description = "Show translite in window instead of fullscreen"},
+    {.identifier = 'G',
+     .access_name = "translite-width",
+     .value_name = "VALUE",
+     .description = "Translite width, default 1920"},
+    {.identifier = 'H',
+     .access_name = "translite-height",
+     .value_name = "VALUE",
+     .description = "Translite height, default 1080"},
+    {.identifier = 'I',
+     .access_name = "translite-screen",
+     .value_name = "VALUE",
+     .description = "Show translite on a specific screen"},
     {.identifier = 'h', .access_letters = "h", .access_name = "help", .description = "Show help"}};
 
 void PINMAMECALLBACK Game(PinmameGame* game)
@@ -140,6 +168,7 @@ void PINMAMECALLBACK OnStateUpdated(int state, const void* p_userData)
   }
   else
   {
+    /*
     PinmameMechConfig mechConfig;
     memset(&mechConfig, 0, sizeof(mechConfig));
 
@@ -152,6 +181,7 @@ void PINMAMECALLBACK OnStateUpdated(int state, const void* p_userData)
     mechConfig.sw[0].endPos = 5;
 
     PinmameSetMech(0, &mechConfig);
+    */
 
     game_state = state;
   }
@@ -377,6 +407,20 @@ void PINMAMECALLBACK OnSolenoidUpdated(PinmameSolenoidState* p_solenoidState, co
   }
 
   ppuc->SetSolenoidState(p_solenoidState->solNo, p_solenoidState->state);
+
+  if (p_solenoidState->solNo == ppuc->GetGameOnSolenoid())
+  {
+    if (p_solenoidState->state)
+    {
+      SDL_RenderTexture(pRenderer, pTransliteTexture, nullptr, nullptr);
+      SDL_RenderPresent(pRenderer);
+    }
+    else if (pTransliteAttractTexture)
+    {
+      SDL_RenderTexture(pRenderer, pTransliteAttractTexture, nullptr, nullptr);
+      SDL_RenderPresent(pRenderer);
+    }
+  }
 }
 
 void PINMAMECALLBACK OnMechAvailable(int mechNo, PinmameMechInfo* p_mechInfo, const void* p_userData)
@@ -417,9 +461,18 @@ int main(int argc, char* argv[])
   cag_option_context cag_context;
   const char* config_file = NULL;
   const char* opt_serial = NULL;
-  const char* opt_serum_timeout = NULL;
-  const char* opt_serum_skip_frames = NULL;
+  uint8_t opt_serum_timeout = 0;
+  uint8_t opt_serum_skip_frames = 0;
   bool opt_dump = false;
+  bool opt_switch_test = false;
+  bool opt_coil_test = false;
+  bool opt_lamp_test = false;
+  const char* opt_translite = NULL;
+  const char* opt_translite_attract = NULL;
+  bool opt_translite_window = false;
+  uint16_t opt_translite_width = 1920;
+  uint16_t opt_translite_height = 1080;
+  int8_t opt_translite_screen = -1;
 
   cag_option_init(&cag_context, options, CAG_ARRAY_SIZE(options), argc, argv);
   while (cag_option_fetch(&cag_context))
@@ -446,10 +499,10 @@ int main(int argc, char* argv[])
         opt_serum = true;
         break;
       case 't':
-        opt_serum_timeout = cag_option_get_value(&cag_context);
+        opt_serum_timeout = atoi(cag_option_get_value(&cag_context));
         break;
       case 'P':
-        opt_serum_skip_frames = cag_option_get_value(&cag_context);
+        opt_serum_skip_frames = atoi(cag_option_get_value(&cag_context));
         break;
       case 'p':
         opt_pup = true;
@@ -481,6 +534,24 @@ int main(int argc, char* argv[])
       case '2':
         opt_lamp_test = true;
         break;
+      case 'D':
+        opt_translite = cag_option_get_value(&cag_context);
+        break;
+      case 'E':
+        opt_translite_attract = cag_option_get_value(&cag_context);
+        break;
+      case 'F':
+        opt_translite_window = true;
+        break;
+      case 'G':
+        opt_translite_width = atoi(cag_option_get_value(&cag_context));
+        break;
+      case 'H':
+        opt_translite_height = atoi(cag_option_get_value(&cag_context));
+        break;
+      case 'I':
+        opt_translite_screen = atoi(cag_option_get_value(&cag_context));
+        break;
       case 'h':
         printf("Usage: ppuc [OPTION]...\n");
         cag_option_print(options, CAG_ARRAY_SIZE(options), stdout);
@@ -492,6 +563,62 @@ int main(int argc, char* argv[])
   {
     printf("No config file provided. Use option -c /path/to/config/file.\n");
     return -1;
+  }
+
+  if (opt_translite)
+  {
+// Set the SDL video driver for Linux framebuffer
+#ifdef __linux__
+    setenv("SDL_VIDEODRIVER", "KMSDRM", 1);
+#endif
+
+    if (!SDL_Init(SDL_INIT_VIDEO))
+    {
+      printf("SDL_Init Error: %s\n", SDL_GetError());
+      return 1;
+    }
+
+    if (!SDL_CreateWindowAndRenderer("PPUC", opt_translite_width, opt_translite_height,
+                                     opt_translite_window ? SDL_WINDOW_BORDERLESS : SDL_WINDOW_FULLSCREEN, &pWindow,
+                                     &pRenderer))
+    {
+      printf("SDL couldn't create window/renderer: %s", SDL_GetError());
+      return SDL_APP_FAILURE;
+    }
+
+    SDL_SetWindowPosition(pWindow, 0, 0);
+    while (!SDL_SyncWindow(pWindow));
+
+    pTransliteTexture = IMG_LoadTexture(pRenderer, opt_translite);
+    if (!pTransliteTexture)
+    {
+      printf("IMG_LoadTexture Error: %s\n", SDL_GetError());
+      SDL_DestroyRenderer(pRenderer);
+      SDL_DestroyWindow(pWindow);
+      SDL_Quit();
+      return 1;
+    }
+
+    if (opt_translite_attract)
+    {
+      pTransliteAttractTexture = IMG_LoadTexture(pRenderer, opt_translite_attract);
+      if (!pTransliteAttractTexture)
+      {
+        printf("IMG_LoadTexture Error: %s\n", SDL_GetError());
+        SDL_DestroyTexture(pTransliteTexture);
+        SDL_DestroyRenderer(pRenderer);
+        SDL_DestroyWindow(pWindow);
+        SDL_Quit();
+        return 1;
+      }
+      SDL_RenderTexture(pRenderer, pTransliteAttractTexture, nullptr, nullptr);
+    }
+    else
+    {
+      SDL_RenderTexture(pRenderer, pTransliteTexture, nullptr, nullptr);
+    }
+
+    SDL_RenderPresent(pRenderer);
   }
 
   ppuc = new PPUC();
@@ -598,17 +725,11 @@ int main(int argc, char* argv[])
 
     if (opt_serum_timeout)
     {
-      int serum_timeout;
-      std::stringstream st(opt_serum_timeout);
-      st >> serum_timeout;
-      dmdConfig->SetIgnoreUnknownFramesTimeout(serum_timeout);
+      dmdConfig->SetIgnoreUnknownFramesTimeout(opt_serum_timeout);
     }
     if (opt_serum_skip_frames)
     {
-      int serum_skip_frames;
-      std::stringstream ssf(opt_serum_skip_frames);
-      ssf >> serum_skip_frames;
-      dmdConfig->SetMaximumUnknownFramesToSkip(serum_skip_frames);
+      dmdConfig->SetMaximumUnknownFramesToSkip(opt_serum_skip_frames);
     }
   }
   else
@@ -698,7 +819,8 @@ int main(int argc, char* argv[])
 
     ppuc->StartUpdates();
 
-    while (true)
+    bool running = true;
+    while (running)
     {
       std::this_thread::sleep_for(std::chrono::microseconds(sleep_us));
 
@@ -742,6 +864,32 @@ int main(int argc, char* argv[])
 
         ppuc->SetLampState(lampNo, lampState);
       }
+
+      SDL_Event event;
+      if (SDL_PollEvent(&event))
+      {
+        switch (event.type)
+        {
+          case SDL_EVENT_QUIT:
+            running = false;
+            break;
+          case SDL_EVENT_KEY_DOWN:
+            if (opt_debug) printf("Key pressed: %d\n", event.key.key);
+            switch (event.key.key)
+            {
+              case SDLK_ESCAPE:
+                running = false;
+                break;
+              case 53:  // 5
+                PinmameSetSwitch(4, 1);
+                break;
+              case 13:  // Enter
+                PinmameSetSwitch(3, 1);
+                break;
+            }
+            break;
+        }
+      }
     }
   }
 
@@ -757,6 +905,19 @@ int main(int argc, char* argv[])
   }
 
   delete pDmd;
+
+  // Cleanup SDL
+  if (pTransliteTexture)
+  {
+    SDL_DestroyTexture(pTransliteTexture);
+    if (pTransliteAttractTexture)
+    {
+      SDL_DestroyTexture(pTransliteAttractTexture);
+    }
+    SDL_DestroyRenderer(pRenderer);
+    SDL_DestroyWindow(pWindow);
+    SDL_Quit();
+  }
 
   return 0;
 }

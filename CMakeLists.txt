@@ -51,8 +51,8 @@ target_include_directories(ppuc_pinmame PUBLIC
 
 if(PLATFORM STREQUAL "win")
    target_link_directories(ppuc_pinmame PUBLIC
-      third-party/build-libs/${PLATFORM}/${ARCH}
-      third-party/runtime-libs/${PLATFORM}/${ARCH}
+      third-party/build-libs/${PLATFORM}-${ARCH}
+      third-party/runtime-libs/${PLATFORM}-${ARCH}
    )
    if(ARCH STREQUAL "x64")
       target_link_libraries(ppuc_pinmame LINK_PUBLIC
@@ -75,7 +75,7 @@ if(PLATFORM STREQUAL "win")
    endif()
 else()
    target_link_directories(ppuc_pinmame PUBLIC
-      third-party/runtime-libs/${PLATFORM}/${ARCH}
+      third-party/runtime-libs/${PLATFORM}-${ARCH}
    )
 
    target_link_libraries(ppuc_pinmame LINK_PUBLIC
@@ -84,5 +84,7 @@ else()
       dmdutil
       openal
       cargs
+      SDL3
+      SDL3_image
    )
 endif()
