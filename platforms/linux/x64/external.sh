@@ -113,8 +113,6 @@ fi
 PINMAME_EXPECTED_SHA="${PINMAME_SHA}"
 PINMAME_FOUND_SHA="$([ -f pinmame/cache.txt ] && cat pinmame/cache.txt || echo "")"
 
-echo "$(pwd)"
-
 if [ "${PINMAME_EXPECTED_SHA}" != "${PINMAME_FOUND_SHA}" ]; then
    echo "Building libpinmame. Expected: ${PINMAME_EXPECTED_SHA}, Found: ${PINMAME_FOUND_SHA}"
 
@@ -122,7 +120,7 @@ if [ "${PINMAME_EXPECTED_SHA}" != "${PINMAME_FOUND_SHA}" ]; then
    mkdir pinmame
    cd pinmame
 
-   curl -sL https://github.com/vbousquet/pinmame/archive/${PINMAME_SHA}.tar.gz -o pinmame-${PINMAME_SHA}.tar.gz
+   curl -sL https://github.com/vpinball/pinmame/archive/${PINMAME_SHA}.tar.gz -o pinmame-${PINMAME_SHA}.tar.gz
    tar xzf pinmame-${PINMAME_SHA}.tar.gz
    mv pinmame-${PINMAME_SHA} pinmame
    cd pinmame
@@ -175,28 +173,28 @@ if [ "${LIBPPUC_EXPECTED_SHA}" != "${LIBPPUC_FOUND_SHA}" ]; then
    cd ..
 fi
 
-cp -a SDL3/SDL/build/libSDL3.{so,so.*} ../../../third-party/runtime-libs/linux-x64/
-cp -r SDL3/SDL/include/SDL3 ../../../third-party/include/
+cp -a SDL3/SDL/build/libSDL3.{so,so.*} ../third-party/runtime-libs/linux-x64/
+cp -r SDL3/SDL/include/SDL3 ../third-party/include/
 
-cp -a SDL3/SDL_image/build/libSDL3_image.{so,so.*} ../../../third-party/runtime-libs/linux-x64/
-cp -r SDL3/SDL_image/include/SDL3_image ../../../third-party/include/
+cp -a SDL3/SDL_image/build/libSDL3_image.{so,so.*} ../third-party/runtime-libs/linux-x64/
+cp -r SDL3/SDL_image/include/SDL3_image ../third-party/include/
 
-cp -a pinmame/pinmame/build/libpinmame.{so,so.*} ../../../third-party/runtime-libs/linux-x64/
-cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include/
-#cp pinmame/pinmame/src/libpinmame/pinmamedef.h ../../../third-party/include/
+cp -a pinmame/pinmame/build/libpinmame.{so,so.*} ../third-party/runtime-libs/linux-x64/
+cp pinmame/pinmame/src/libpinmame/libpinmame.h ../third-party/include/
+#cp pinmame/pinmame/src/libpinmame/pinmamedef.h ../third-party/include/
 
-cp -a libdmdutil/libdmdutil/build/libdmdutil.{so,so.*} ../../../third-party/runtime-libs/linux-x64/
-cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/
-cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libzedmd.{so,so.*} ../../../third-party/runtime-libs/linux-x64/
-cp libdmdutil/libdmdutil/third-party/include/ZeDMD.h ../../../third-party/include/
-cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libserum.{so,so.*} ../../../third-party/runtime-libs/linux-x64/
-cp libdmdutil/libdmdutil/third-party/include/serum.h ../../../third-party/include/
-cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../../../third-party/include/
-cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libserialport.{so,so.*} ../../../third-party/runtime-libs/linux-x64/
-cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libpupdmd.{so,so.*} ../../../third-party/runtime-libs/linux-x64/
-cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/include/
-cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libsockpp.{so,so.*} ../../../third-party/runtime-libs/linux-x64/
-cp libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libcargs.so ../../../third-party/runtime-libs/linux-x64/
+cp -a libdmdutil/libdmdutil/build/libdmdutil.{so,so.*} ../third-party/runtime-libs/linux-x64/
+cp -r libdmdutil/libdmdutil/include/DMDUtil ../third-party/include/
+cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libzedmd.{so,so.*} ../third-party/runtime-libs/linux-x64/
+cp libdmdutil/libdmdutil/third-party/include/ZeDMD.h ../third-party/include/
+cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libserum.{so,so.*} ../third-party/runtime-libs/linux-x64/
+cp libdmdutil/libdmdutil/third-party/include/serum.h ../third-party/include/
+cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../third-party/include/
+cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libserialport.{so,so.*} ../third-party/runtime-libs/linux-x64/
+cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libpupdmd.{so,so.*} ../third-party/runtime-libs/linux-x64/
+cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../third-party/include/
+cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libsockpp.{so,so.*} ../third-party/runtime-libs/linux-x64/
+cp libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libcargs.so ../third-party/runtime-libs/linux-x64/
 
 cp libppuc/libppuc/src/PPUC.h ../third-party/include/
 cp libppuc/libppuc/src/PPUC_structs.h ../third-party/include/
