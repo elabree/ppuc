@@ -59,8 +59,9 @@ if(PLATFORM STREQUAL "win")
          pinmame64
          ppuc64
          dmdutil64
-         openal
          cargs64
+         SDL3
+         SDL3_image
          ws2_32
       )
    else()
@@ -68,8 +69,9 @@ if(PLATFORM STREQUAL "win")
          pinmame
          ppuc
          dmdutil
-         openal
          cargs
+         SDL3
+         SDL3_image
          ws2_32
       )
    endif()
@@ -82,7 +84,6 @@ else()
       pinmame
       ppuc
       dmdutil
-      openal
       cargs
       SDL3
       SDL3_image

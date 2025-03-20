@@ -1,7 +1,5 @@
 #include "PPUC.h"
 
-#include <AL/al.h>
-#include <AL/alc.h>
 #include <ctype.h>
 #include <inttypes.h>
 #include <stdlib.h>
@@ -20,16 +18,8 @@
 #include "io-boards/Event.h"
 #include "libpinmame.h"
 
-#define MAX_AUDIO_BUFFERS 4
-#define MAX_AUDIO_QUEUE_SIZE 10
-#define MAX_EVENT_SEND_QUEUE_SIZE 10
-#define MAX_EVENT_RECV_QUEUE_SIZE 10
-
-ALuint _audioSource;
-ALuint _audioBuffers[MAX_AUDIO_BUFFERS];
-std::queue<void*> _audioQueue;
-int _audioChannels;
-int _audioSampleRate;
+SDL_AudioStream* m_pstream = nullptr;
+SDL_AudioSpec audioSpec;
 
 DMDUtil::DMD* pDmd;
 PPUC* ppuc;
@@ -320,82 +310,37 @@ int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* 
         p_audioInfo->samplesPerFrame, p_audioInfo->bufferSize);
   }
 
-  _audioChannels = p_audioInfo->channels;
-  _audioSampleRate = (int)p_audioInfo->sampleRate;
-
-  for (int index = 0; index < MAX_AUDIO_BUFFERS; index++)
+  if (!opt_no_sound)
   {
-    int bufferSize = p_audioInfo->samplesPerFrame * _audioChannels * sizeof(int16_t);
-    void* p_buffer = malloc(bufferSize);
-    memset(p_buffer, 0, bufferSize);
+    audioSpec.freq = (int)p_audioInfo->sampleRate;
+    audioSpec.format = SDL_AUDIO_S16LE;
+    audioSpec.channels = p_audioInfo->channels;
 
-    alBufferData(_audioBuffers[index], _audioChannels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, p_buffer,
-                 bufferSize, _audioSampleRate);
+    if (m_pstream)
+    {
+      SDL_DestroyAudioStream(m_pstream);
+    }
+
+    m_pstream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &audioSpec, nullptr, nullptr);
+
+    if (m_pstream)
+    {
+      SDL_ResumeAudioStreamDevice(m_pstream);  // it always stops paused
+    }
+    else
+    {
+      printf("SDL failed to load audio stream: %s", SDL_GetError());
+    }
   }
-
-  alSourceQueueBuffers(_audioSource, MAX_AUDIO_BUFFERS, _audioBuffers);
-  alSourcePlay(_audioSource);
-
   return p_audioInfo->samplesPerFrame;
 }
 
 int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* p_userData)
 {
-  if (opt_no_sound) return 0;
-
-  if (_audioQueue.size() >= MAX_AUDIO_QUEUE_SIZE)
+  if (m_pstream)
   {
-    while (!_audioQueue.empty())
-    {
-      void* p_destBuffer = _audioQueue.front();
-
-      free(p_destBuffer);
-      _audioQueue.pop();
-    }
+    SDL_PutAudioStreamData(m_pstream, p_buffer, samples * 1 * sizeof(int16_t));
   }
-
-  int bufferSize = samples * _audioChannels * sizeof(int16_t);
-  void* p_destBuffer = malloc(bufferSize);
-  memcpy(p_destBuffer, p_buffer, bufferSize);
-
-  _audioQueue.push(p_destBuffer);
-
-  ALint buffersProcessed;
-  alGetSourcei(_audioSource, AL_BUFFERS_PROCESSED, &buffersProcessed);
-
-  if (buffersProcessed <= 0)
-  {
-    return samples;
-  }
-
-  while (buffersProcessed > 0)
-  {
-    ALuint buffer = 0;
-    alSourceUnqueueBuffers(_audioSource, 1, &buffer);
-
-    if (_audioQueue.size() > 0)
-    {
-      void* p_destBuffer = _audioQueue.front();
-
-      alBufferData(buffer, _audioChannels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, p_destBuffer, bufferSize,
-                   _audioSampleRate);
-
-      free(p_destBuffer);
-      _audioQueue.pop();
-    }
-
-    alSourceQueueBuffers(_audioSource, 1, &buffer);
-    buffersProcessed--;
-  }
-
-  ALint state;
-  alGetSourcei(_audioSource, AL_SOURCE_STATE, &state);
-
-  if (state != AL_PLAYING)
-  {
-    alSourcePlay(_audioSource);
-  }
-
   return samples;
 }
 
@@ -563,6 +508,16 @@ int main(int argc, char* argv[])
   {
     printf("No config file provided. Use option -c /path/to/config/file.\n");
     return -1;
+  }
+
+  if (!opt_no_sound)
+  {
+    // Initialize the sound device
+    if (!SDL_Init(SDL_INIT_AUDIO))
+    {
+      printf("SDL_Init failed: %s\n", SDL_GetError());
+      return 1;
+    }
   }
 
   if (opt_translite)
@@ -769,30 +724,6 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  ALCdevice* device;
-  if (!opt_no_sound)
-  {
-    // Initialize the sound device
-    const ALCchar* defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-    device = alcOpenDevice(defaultDeviceName);
-    if (!device)
-    {
-      printf("failed to alcOpenDevice for %s\n", defaultDeviceName);
-      return 1;
-    }
-
-    ALCcontext* context = alcCreateContext(device, NULL);
-    if (!context)
-    {
-      printf("failed call to alcCreateContext\n");
-      return 1;
-    }
-
-    alcMakeContextCurrent(context);
-    alGenSources((ALuint)1, &_audioSource);
-    alGenBuffers(MAX_AUDIO_BUFFERS, _audioBuffers);
-  }
-
   PinmameSetConfig(&config);
 
   PinmameSetDmdMode(PINMAME_DMD_MODE_RAW);
@@ -841,8 +772,8 @@ int main(int argc, char* argv[])
             printf("Switch updated: #%d, %d\n", switchState->number, switchState->state);
           }
 
-          // Switches between 200 and 240 are custom switches within the io-boards which should not be sent to pinmame.
-          // Switches above 240 will become negative values, for example 243 => -3.
+          // Switches between 200 and 240 are custom switches within the io-boards which should not be sent to
+          // pinmame. Switches above 240 will become negative values, for example 243 => -3.
           if (switchState->number < 200 || switchState->number > 241)
           {
             int switchNumber = (switchState->number < 241) ? switchState->number : 240 - switchState->number;
@@ -881,9 +812,11 @@ int main(int argc, char* argv[])
                 running = false;
                 break;
               case 53:  // 5
+                // Coin Right on Williams Flash
                 PinmameSetSwitch(4, 1);
                 break;
               case 13:  // Enter
+                // Game Start on Williams Flash
                 PinmameSetSwitch(3, 1);
                 break;
             }
@@ -899,14 +832,16 @@ int main(int argc, char* argv[])
     ppuc->Disconnect();
   }
 
-  if (device)
-  {
-    alcCloseDevice(device);
-  }
-
   delete pDmd;
 
-  // Cleanup SDL
+  bool quitSDL = false;
+
+  if (m_pstream)
+  {
+    SDL_DestroyAudioStream(m_pstream);
+    quitSDL = true;
+  }
+
   if (pTransliteTexture)
   {
     SDL_DestroyTexture(pTransliteTexture);
@@ -916,6 +851,11 @@ int main(int argc, char* argv[])
     }
     SDL_DestroyRenderer(pRenderer);
     SDL_DestroyWindow(pWindow);
+    quitSDL = true;
+  }
+
+  if (quitSDL)
+  {
     SDL_Quit();
   }
 

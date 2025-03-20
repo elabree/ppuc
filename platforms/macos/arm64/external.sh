@@ -9,7 +9,6 @@ NUM_PROCS=$(sysctl -n hw.ncpu)
 echo "Building libraries..."
 echo "  SDL_SHA: ${SDL_SHA}"
 echo "  SDL_IMAGE_SHA: ${SDL_IMAGE_SHA}"
-echo "  LIBOPENAL_SHA: ${LIBOPENAL_SHA}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBPPUC_SHA: ${LIBPPUC_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
@@ -28,7 +27,7 @@ mkdir -p external ${CACHE_DIR}
 cd external
 
 #
-# build SDL3, SDL3_image, SDL3_ttf, SDL3_mixer
+# build SDL3, SDL3_image
 #
 
 SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}"
@@ -112,24 +111,8 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
 fi
 
 #
-# libopenal
+# pinamame
 #
-
-CACHE_NAME="openal-soft-${LIBOPENAL_SHA}"
-
-if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-    rm -f ../${CACHE_DIR}/openal-soft-*.cache
-    rm -rf openal-soft-*
-    curl -sL https://github.com/kcat/openal-soft/archive/${LIBOPENAL_SHA}.zip -o openal-soft.zip
-    unzip openal-soft
-    cd openal-soft-${LIBOPENAL_SHA}
-    cp -r include/AL ../../third-party/include/
-    cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_OSX_ARCHITECTURES=arm64 -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
-    cmake --build build -- -j${NUM_PROCS}
-    cp -P build/libopenal*.dylib ../../third-party/runtime-libs/macos-arm64/
-    cd ..
-    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
-fi
 
 PINMAME_EXPECTED_SHA="${PINMAME_SHA}"
 PINMAME_FOUND_SHA="$([ -f pinmame/cache.txt ] && cat pinmame/cache.txt || echo "")"
@@ -160,28 +143,39 @@ if [ "${PINMAME_EXPECTED_SHA}" != "${PINMAME_FOUND_SHA}" ]; then
    cd ..
 fi
 
-
 #
 # libppuc
 #
 
-CACHE_NAME="libppuc-${LIBPPUC_SHA}"
+LIBPPUC_EXPECTED_SHA="${LIBPPUC_SHA}"
+LIBPPUC_FOUND_SHA="$([ -f libppuc/cache.txt ] && cat libppuc/cache.txt || echo "")"
 
-if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-    rm -f ../${CACHE_DIR}/libppuc-*.cache
-    rm -rf libppuc-*
-    curl -sL https://github.com/PPUC/libppuc/archive/${LIBPPUC_SHA}.zip -o libppuc.zip
-    unzip libppuc.zip
-    cd libppuc-${LIBPPUC_SHA}
-    cp src/PPUC.h ../../third-party/include/
-    cp src/PPUC_structs.h ../../third-party/include/
-    BUILD_TYPE=${BUILD_TYPE} platforms/macos/arm64/external.sh
-    cp -a third-party/. ../../third-party
-    cmake -DPLATFORM=macos -DARCH=arm64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
-    cmake --build build -- -j${NUM_PROCS}
-    cp -P build/libppuc*.dylib ../../third-party/runtime-libs/macos-arm64/
-    cd ..
-    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+if [ "${LIBPPUC_EXPECTED_SHA}" != "${LIBPPUC_FOUND_SHA}" ]; then
+   echo "Building libppuc. Expected: ${LIBPPUC_EXPECTED_SHA}, Found: ${LIBPPUC_FOUND_SHA}"
+
+   rm -rf libppuc
+   mkdir libppuc
+   cd libppuc
+
+   curl -sL https://github.com/PPUC/libppuc/archive/${LIBPPUC_SHA}.tar.gz -o libppuc-${LIBPPUC_SHA}.tar.gz
+   tar xzf libppuc-${LIBPPUC_SHA}.tar.gz
+   mv libppuc-${LIBPPUC_SHA} libppuc
+   cd libppuc
+
+   BUILD_TYPE=${BUILD_TYPE} platforms/macos/arm64/external.sh
+
+   cmake \
+      -DPLATFORM=macos \
+      -DARCH=arm64 \
+      -DBUILD_STATIC=OFF \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cd ..
+
+   echo "$LIBPPUC_EXPECTED_SHA" > cache.txt
+
+   cd ..
 fi
 
 cp -a SDL3/SDL/build/libSDL3.{dylib,*.dylib} ../third-party/runtime-libs/macos-arm64/
@@ -207,3 +201,12 @@ cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libpupdmd.{dyli
 cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../third-party/include/
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libsockpp.{dylib,*.dylib} ../third-party/runtime-libs/macos-arm64/
 cp libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libcargs.dylib ../third-party/runtime-libs/macos-arm64/
+cp -r libdmdutil/libdmdutil/third-party/include/sockpp ../third-party/include/
+cp libdmdutil/libdmdutil/third-party/include/cargs.h ../third-party/include/
+
+cp libppuc/libppuc/src/PPUC.h ../third-party/include/
+cp libppuc/libppuc/src/PPUC_structs.h ../third-party/include/
+cp -r libppuc/libppuc/third-party/include/yaml-cpp ../third-party/include/
+cp -r libppuc/libppuc/third-party/include/io-boards ../third-party/include/
+cp -a libppuc/libppuc/build/libppuc.{dylib,*.dylib} ../third-party/runtime-libs/macos-arm64/
+cp -a libppuc/libppuc/third-party/runtime-libs/macos/arm64/libyaml-cpp.{dylib,*.dylib} ../third-party/runtime-libs/macos-arm64/
