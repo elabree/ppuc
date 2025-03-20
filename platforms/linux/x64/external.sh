@@ -201,4 +201,4 @@ cp libppuc/libppuc/src/PPUC_structs.h ../third-party/include/
 cp -r libppuc/libppuc/third-party/include/yaml-cpp ../third-party/include/
 cp -r libppuc/libppuc/third-party/include/io-boards ../third-party/include/
 cp -a libppuc/libppuc/build/libppuc.{so,so.*} ../third-party/runtime-libs/linux-x64/
-cp -a libppuc/libppuc/third-party/runtime-libs/linux/x64/libyaml-cpp.{so.*} ../third-party/runtime-libs/linux-x64/
+cp -a libppuc/libppuc/third-party/runtime-libs/linux/x64/libyaml-cpp.so* ../third-party/runtime-libs/linux-x64/
