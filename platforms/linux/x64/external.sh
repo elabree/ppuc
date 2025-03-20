@@ -4,7 +4,7 @@ set -e
 
 source ./platforms/config.sh
 
-NUM_PROCS=$(sysctl -n hw.ncpu)
+NUM_PROCS=$(nproc)
 
 echo "Building libraries..."
 echo "  SDL_SHA: ${SDL_SHA}"
