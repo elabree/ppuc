@@ -195,8 +195,7 @@ cp libdmdutil/libdmdutil/third-party/include/ZeDMD.h ../third-party/include/
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libserum.{dylib,*.dylib} ../third-party/runtime-libs/macos-arm64/
 cp libdmdutil/libdmdutil/third-party/include/serum.h ../third-party/include/
 cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../third-party/include/
-#cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libserialport.{dylib,*.dylib} ../third-party/runtime-libs/macos-arm64/
-cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libserialport.dylib ../third-party/runtime-libs/macos-arm64/
+cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libserialport.{dylib,*.dylib} ../third-party/runtime-libs/macos-arm64/
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libpupdmd.{dylib,*.dylib} ../third-party/runtime-libs/macos-arm64/
 cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../third-party/include/
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libsockpp.{dylib,*.dylib} ../third-party/runtime-libs/macos-arm64/

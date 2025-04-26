@@ -192,7 +192,6 @@ cp libdmdutil/libdmdutil/third-party/include/serum.h ../third-party/include/
 cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../third-party/include/
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libserialport.{so,so.*} ../third-party/runtime-libs/linux-x64/
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libpupdmd.{so,so.*} ../third-party/runtime-libs/linux-x64/
-cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libpupdmd.{so,so.*} ../third-party/runtime-libs/linux-x64/
 cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../third-party/include/
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libsockpp.{so,so.*} ../third-party/runtime-libs/linux-x64/
 cp libdmdutil/libdmdutil/third-party/runtime-libs/linux/x64/libcargs.so ../third-party/runtime-libs/linux-x64/
