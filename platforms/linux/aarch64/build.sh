@@ -15,4 +15,4 @@ rm -rf ppuc
 mkdir ppuc
 
 cp build/ppuc_pinmame ppuc/
-cp -P third-party/runtime-libs/linux/aarch64/*.so* ppuc/
+cp -P third-party/runtime-libs/linux-aarch64/*.so* ppuc/
