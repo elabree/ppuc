@@ -7,8 +7,6 @@ LIBPINMAME_SHA=c69f68aca1fe28d5bb65ab10a17c09fb2593d57b
 LIBPPUC_SHA=2bb464dd10e37649e0ec3321edfaf71b4c1d3216
 LIBDMDUTIL_SHA=c7b28ff9b26d206820f438a54c9bc89171a3ae02
 
-NUM_PROCS=$(nproc)
-
 echo "Building libraries..."
 echo "  LIBOPENAL_SHA: ${LIBOPENAL_SHA}"
 echo "  LIBPINMAME_SHA: ${LIBPINMAME_SHA}"
@@ -26,7 +24,6 @@ fi
 
 echo "Build type: ${BUILD_TYPE}"
 echo "Cache dir: ${CACHE_DIR}"
-echo "Procs: ${NUM_PROCS}"
 echo ""
 
 mkdir -p external ${CACHE_DIR}
@@ -45,37 +42,24 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     unzip libdmdutil.zip
     cd libdmdutil-${LIBDMDUTIL_SHA}
     cp -r include/DMDUtil ../../third-party/include/
-    BUILD_TYPE=${BUILD_TYPE} platforms/linux/aarch64/external.sh
+    BUILD_TYPE=${BUILD_TYPE} platforms/win/x64/external.sh
     cp -a third-party/. ../../third-party
-    cmake -DPLATFORM=linux -DARCH=aarch64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
-    cmake --build build -- -j${NUM_PROCS}
-    cp -P build/*.so* ../../third-party/runtime-libs/linux/aarch64/
+    cmake \
+      -G "Visual Studio 17 2022" \
+      -DPLATFORM=win \
+      -DARCH=x64 \
+      -DBUILD_SHARED=OFF \
+      -DBUILD_STATIC=ON \
+      -B build
+    cmake --build build --config ${BUILD_TYPE}
+    cp build/${BUILD_TYPE}/dmdutil64.lib ../../third-party/build-libs/win/x64/
+    cp build/${BUILD_TYPE}/dmdutil64.dll ../../third-party/runtime-libs/win/x64/
     cd ..
     touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 #
-# libopenal
-#
-
-CACHE_NAME="openal-soft-${LIBOPENAL_SHA}"
-
-if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-    rm -f ../${CACHE_DIR}/openal-soft-*.cache
-    rm -rf openal-soft-*
-    curl -sL https://github.com/kcat/openal-soft/archive/${LIBOPENAL_SHA}.zip -o openal-soft.zip
-    unzip openal-soft
-    cd openal-soft-${LIBOPENAL_SHA}
-    cp -r include/AL ../../third-party/include/
-    cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DALSOFT_UTILS=OFF -DALSOFT_EXAMPLES=OFF -DALSOFT_INSTALL_EXAMPLES=OFF -DALSOFT_INSTALL_UTILS=OFF -B build
-    cmake --build build -- -j${NUM_PROCS}
-    cp -P build/libopenal*.so* ../../third-party/runtime-libs/linux/aarch64/
-    cd ..
-    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
-fi
-
-#
-# libpinmame
+# libpiname
 #
 
 CACHE_NAME="pinmame-${LIBPINMAME_SHA}"
@@ -88,9 +72,16 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     cd pinmame-${LIBPINMAME_SHA}
     cp src/libpinmame/libpinmame.h ../../third-party/include/
     cp cmake/libpinmame/CMakeLists.txt CMakeLists.txt
-    cmake -DPPUC_SUPPORT=1 -DPLATFORM=linux -DARCH=aarch64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
-    cmake --build build -- -j${NUM_PROCS}
-    cp -P build/libpinmame*.so* ../../third-party/runtime-libs/linux/aarch64/
+    cmake \
+      -G "Visual Studio 17 2022" \
+      -DPLATFORM=win \
+      -DARCH=x64 \
+      -DBUILD_SHARED=OFF \
+      -DBUILD_STATIC=ON \
+      -B build
+    cmake --build build --config ${BUILD_TYPE}
+    cp build/${BUILD_TYPE}/pinmame64.lib ../../third-party/build-libs/win/x64/
+    cp build/${BUILD_TYPE}/pinamme64.dll ../../third-party/runtime-libs/win/x64/
     cd ..
     touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
@@ -109,11 +100,18 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
     cd libppuc-${LIBPPUC_SHA}
     cp src/PPUC.h ../../third-party/include/
     cp src/PPUC_structs.h ../../third-party/include/
-    BUILD_TYPE=${BUILD_TYPE} platforms/linux/aarch64/external.sh
+    BUILD_TYPE=${BUILD_TYPE} platforms/win/x64/external.sh
     cp -a third-party/. ../../third-party
-    cmake -DPLATFORM=linux -DARCH=aarch64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B build
-    cmake --build build -- -j${NUM_PROCS}
-    cp -P build/libppuc*.so* ../../third-party/runtime-libs/linux/aarch64/
+    cmake \
+      -G "Visual Studio 17 2022" \
+      -DPLATFORM=win \
+      -DARCH=x64 \
+      -DBUILD_SHARED=OFF \
+      -DBUILD_STATIC=ON \
+      -B build
+    cmake --build build --config ${BUILD_TYPE}
+    cp build/${BUILD_TYPE}/ppuc64.lib ../../third-party/build-libs/win/x64/
+    cp build/${BUILD_TYPE}/ppuc64.dll ../../third-party/runtime-libs/win/x64/
     cd ..
     touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi

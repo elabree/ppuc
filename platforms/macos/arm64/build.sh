@@ -15,4 +15,4 @@ rm -rf ppuc
 mkdir ppuc
 
 cp build/ppuc_pinmame ppuc/
-cp -P third-party/runtime-libs/macos/arm64/*.dylib ppuc/
+cp -P third-party/runtime-libs/macos-arm64/*.dylib ppuc/

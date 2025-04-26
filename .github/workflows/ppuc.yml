@@ -54,16 +54,16 @@ jobs:
             arch: aarch64
     steps:
       - uses: actions/checkout@v4
-      - if: (matrix.platform == 'linux' && matrix.arch == 'x64')
-        name: Install autoconf libtool libudev-dev libpipewire-0.3-dev
-        run: sudo apt install autoconf libtool libudev-dev libpipewire-0.3-dev
       - if: (matrix.platform == 'win')
         name: Add msbuild to path (win runner)
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v2
       - if: (matrix.platform == 'macos')
         name: Add autoconf and automake (mac runner)
         run: |
            brew install autoconf automake gcc-aarch64-embedded aarch64-elf-gcc libtool
+      - if: (matrix.platform == 'linux' && matrix.arch == 'x64')
+        name: Install autoconf libtool libudev-dev libpipewire-0.3-dev
+        run: sudo apt install autoconf libtool libudev-dev libpipewire-0.3-dev
       - if: (!(matrix.platform == 'linux' && matrix.arch == 'aarch64'))
         name: Build ppuc-${{ matrix.platform }}-${{ matrix.arch }}
         run: |

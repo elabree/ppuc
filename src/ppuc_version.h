@@ -1,7 +1,7 @@
 #pragma once
 
 #define PPUC_EXECUTABLE_VERSION_MAJOR 0  // X Digits
-#define PPUC_EXECUTABLE_VERSION_MINOR 2  // Max 2 Digits
+#define PPUC_EXECUTABLE_VERSION_MINOR 3  // Max 2 Digits
 #define PPUC_EXECUTABLE_VERSION_PATCH 0  // Max 2 Digits
 
 #define _PPUC_EXECUTABLE_STR(x) #x
