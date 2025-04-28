@@ -61,7 +61,8 @@ if(PLATFORM STREQUAL "win")
          dmdutil64
          cargs64
          SDL364
-         SDL364_image
+         SDL3_image64
+         yaml-cpp
          ws2_32
       )
    else()
@@ -72,6 +73,7 @@ if(PLATFORM STREQUAL "win")
          cargs
          SDL3
          SDL3_image
+         yaml-cpp
          ws2_32
       )
    endif()
