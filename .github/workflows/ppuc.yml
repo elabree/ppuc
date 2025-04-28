@@ -34,10 +34,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-2025
             platform: win
             arch: x64
-          - os: windows-latest
+          - os: windows-2025
             platform: win
             arch: x86
           - os: macos-latest
