@@ -47,6 +47,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
       -DSDL_TEST_LIBRARY=OFF \
+      -DSDL_JOYSTICK=OFF \
       -B build
    cmake --build build --config ${BUILD_TYPE}
    cd ..
