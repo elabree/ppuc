@@ -95,7 +95,7 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
    tar xzf libdmdutil-${LIBDMDUTIL_SHA}.tar.gz
    mv libdmdutil-${LIBDMDUTIL_SHA} libdmdutil
    cd libdmdutil
-   BUILD_TYPE=${BUILD_TYPE} ./platforms/linux/x64/external.sh
+   ./platforms/windows/x64/external.sh
    cmake \
       -G "Visual Studio 17 2022" \
       -DPLATFORM=win \
@@ -164,7 +164,7 @@ if [ "${LIBPPUC_EXPECTED_SHA}" != "${LIBPPUC_FOUND_SHA}" ]; then
    mv libppuc-${LIBPPUC_SHA} libppuc
    cd libppuc
 
-   BUILD_TYPE=${BUILD_TYPE} platforms/linux/x64/external.sh
+   BUILD_TYPE=${BUILD_TYPE} platforms/windows/x64/external.sh
    cmake \
       -G "Visual Studio 17 2022" \
       -DPLATFORM=win \
@@ -193,25 +193,25 @@ cp pinmame/pinmame/build/${BUILD_TYPE}/pinmame64.dll ../third-party/runtime-libs
 cp pinmame/pinmame/src/libpinmame/libpinmame.h ../third-party/include/
 #cp pinmame/pinmame/src/libpinmame/pinmamedef.h ../third-party/include/
 
-cp libdmdutil/libdmdutil/build/${BUILD_TYPE}/dmdutil64.lib ../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/build/${BUILD_TYPE}/dmdutil64.dll ../third-party/runtime-libs/windows-x64
+cp libdmdutil/libdmdutil/build/${BUILD_TYPE}/dmdutil64.lib ../third-party/build-libs/windows-x64/
+cp libdmdutil/libdmdutil/build/${BUILD_TYPE}/dmdutil64.dll ../third-party/runtime-libs/windows-x64/
 cp -r libdmdutil/libdmdutil/include/DMDUtil ../third-party/include/
-cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/zedmd64.lib ../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/zedmd64.dll ../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/include/ZeDMD.h ../third-party/include
-cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/serum64.lib ../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/serum64.dll ../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/include/serum.h ../third-party/include
-cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../third-party/include
-cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/libserialport64.lib ../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/libserialport64.dll ../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/pupdmd64.lib ../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/pupdmd64.dll ../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../third-party/include
-cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/sockpp64.lib ../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/sockpp64.dll ../third-party/runtime-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/cargs64.lib ../third-party/build-libs/windows-x64
-cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/cargs64.dll ../third-party/runtime-libs/windows-x64
+cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/zedmd64.lib ../third-party/build-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/zedmd64.dll ../third-party/runtime-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/include/ZeDMD.h ../third-party/include/
+cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/serum64.lib ../third-party/build-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/serum64.dll ../third-party/runtime-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/include/serum.h ../third-party/include/
+cp libdmdutil/libdmdutil/third-party/include/serum-decode.h ../third-party/include/
+cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/libserialport64.lib ../third-party/build-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/libserialport64.dll ../third-party/runtime-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/pupdmd64.lib ../third-party/build-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/pupdmd64.dll ../third-party/runtime-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../third-party/include/
+cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/sockpp64.lib ../third-party/build-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/sockpp64.dll ../third-party/runtime-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/cargs64.lib ../third-party/build-libs/windows-x64/
+cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/cargs64.dll ../third-party/runtime-libs/windows-x64/
 
 cp libppuc/libppuc/src/PPUC.h ../third-party/include/
 cp libppuc/libppuc/src/PPUC_structs.h ../third-party/include/
