@@ -212,6 +212,7 @@ cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/sockpp64.lib ../third-pa
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/sockpp64.dll ../third-party/runtime-libs/win-x64/
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/cargs64.lib ../third-party/build-libs/win-x64/
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/cargs64.dll ../third-party/runtime-libs/win-x64/
+cp libdmdutil/libdmdutil/third-party/include/cargs.h ../third-party/include/
 
 cp libppuc/libppuc/src/PPUC.h ../third-party/include/
 cp libppuc/libppuc/src/PPUC_structs.h ../third-party/include/
