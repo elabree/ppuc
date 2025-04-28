@@ -131,6 +131,7 @@ if [ "${PINMAME_EXPECTED_SHA}" != "${PINMAME_FOUND_SHA}" ]; then
    cp cmake/libpinmame/CMakeLists.txt .
    cmake \
       -G "Visual Studio 17 2022" \
+      -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
       -DBUILD_SHARED=ON \
@@ -166,6 +167,7 @@ if [ "${LIBPPUC_EXPECTED_SHA}" != "${LIBPPUC_FOUND_SHA}" ]; then
    platforms/win/x86/external.sh
    cmake \
       -G "Visual Studio 17 2022" \
+      -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
       -DBUILD_SHARED=ON \
@@ -216,7 +218,7 @@ cp libppuc/libppuc/src/PPUC.h ../third-party/include/
 cp libppuc/libppuc/src/PPUC_structs.h ../third-party/include/
 cp -r libppuc/libppuc/third-party/include/yaml-cpp ../third-party/include/
 cp -r libppuc/libppuc/third-party/include/io-boards ../third-party/include/
-cp libppuc/libppuc/build/${BUILD_TYPE}/libppuc.lib ../third-party/build-libs/win-x86/
-cp libppuc/libppuc/build/${BUILD_TYPE}/libppuc.dll ../third-party/runtime-libs/win-x86/
+cp libppuc/libppuc/build/${BUILD_TYPE}/ppuc.lib ../third-party/build-libs/win-x86/
+cp libppuc/libppuc/build/${BUILD_TYPE}/ppuc.dll ../third-party/runtime-libs/win-x86/
 cp -a libppuc/libppuc/third-party/runtime-libs/windows/x86/libyaml-cpp.lib ../third-party/build-libs/win-x86/
 cp -a libppuc/libppuc/third-party/runtime-libs/windows/x86/libyaml-cpp.dll ../third-party/runtime-libs/win-x86/

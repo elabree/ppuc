@@ -217,7 +217,7 @@ cp libppuc/libppuc/src/PPUC.h ../third-party/include/
 cp libppuc/libppuc/src/PPUC_structs.h ../third-party/include/
 cp -r libppuc/libppuc/third-party/include/yaml-cpp ../third-party/include/
 cp -r libppuc/libppuc/third-party/include/io-boards ../third-party/include/
-cp libppuc/libppuc/build/${BUILD_TYPE}/libppuc.lib ../third-party/build-libs/win-x64/
-cp libppuc/libppuc/build/${BUILD_TYPE}/libppuc.dll ../third-party/runtime-libs/win-x64/
+cp libppuc/libppuc/build/${BUILD_TYPE}/ppuc64.lib ../third-party/build-libs/win-x64/
+cp libppuc/libppuc/build/${BUILD_TYPE}/ppuc64.dll ../third-party/runtime-libs/win-x64/
 cp -a libppuc/libppuc/third-party/runtime-libs/windows/x64/libyaml-cpp.lib ../third-party/build-libs/win-x64/
 cp -a libppuc/libppuc/third-party/runtime-libs/windows/x64/libyaml-cpp.dll ../third-party/runtime-libs/win-x64/
