@@ -43,6 +43,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    cd SDL
    cmake \
       -G "Visual Studio 17 2022" \
+      -A Win32 \
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
       -DSDL_TEST_LIBRARY=OFF \
@@ -57,6 +58,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    ./external/download.sh
    cmake \
       -G "Visual Studio 17 2022" \
+      -A Win32 \
       -DBUILD_SHARED_LIBS=ON \
       -DSDLIMAGE_SAMPLES=OFF \
       -DSDLIMAGE_DEPS_SHARED=ON \

@@ -60,8 +60,8 @@ if(PLATFORM STREQUAL "win")
          ppuc64
          dmdutil64
          cargs64
-         SDL3
-         SDL3_image
+         SDL364
+         SDL364_image
          ws2_32
       )
    else()
