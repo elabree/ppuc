@@ -96,6 +96,7 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
    ./platforms/win/x86/external.sh
    cmake \
       -G "Visual Studio 17 2022" \
+      -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
       -DBUILD_SHARED=ON \
