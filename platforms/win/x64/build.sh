@@ -15,4 +15,4 @@ rm -rf ppuc
 mkdir ppuc
 
 cp build/${BUILD_TYPE}/ppuc-pinmame ppuc/
-cp -P third-party/runtime-libs/win/x64/*.dll ppuc/
+cp -P third-party/runtime-libs/win-x64/*.dll ppuc/
