@@ -27,7 +27,7 @@ cd external
 # build SDL3, SDL3_image
 #
 
-DL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}"
+SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}"
 SDL3_FOUND_SHA="$([ -f SDL3/cache.txt ] && cat SDL3/cache.txt || echo "")"
 
 if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
