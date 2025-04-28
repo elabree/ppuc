@@ -220,5 +220,5 @@ cp -r libppuc/libppuc/third-party/include/yaml-cpp ../third-party/include/
 cp -r libppuc/libppuc/third-party/include/io-boards ../third-party/include/
 cp libppuc/libppuc/build/${BUILD_TYPE}/ppuc.lib ../third-party/build-libs/win-x86/
 cp libppuc/libppuc/build/${BUILD_TYPE}/ppuc.dll ../third-party/runtime-libs/win-x86/
-cp -a libppuc/libppuc/third-party/build-libs/windows/x86/yaml-cpp.lib ../third-party/build-libs/win-x86/
-cp -a libppuc/libppuc/third-party/runtime-libs/windows/x86/yaml-cpp.dll ../third-party/runtime-libs/win-x86/
+cp -a libppuc/libppuc/third-party/build-libs/win/x86/yaml-cpp.lib ../third-party/build-libs/win-x86/
+cp -a libppuc/libppuc/third-party/runtime-libs/win/x86/yaml-cpp.dll ../third-party/runtime-libs/win-x86/
