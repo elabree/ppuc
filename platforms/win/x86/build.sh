@@ -14,5 +14,5 @@ cmake --build build --config ${BUILD_TYPE}
 rm -rf ppuc
 mkdir ppuc
 
-cp build/${BUILD_TYPE}/ppuc_pinmame ppuc/
+cp build/${BUILD_TYPE}/ppuc-pinamme ppuc/
 cp -P third-party/runtime-libs/win/x86/*.dll ppuc/
