@@ -18,7 +18,6 @@ fi
 
 echo "Build type: ${BUILD_TYPE}"
 echo "Cache dir: ${CACHE_DIR}"
-echo "Procs: ${NUM_PROCS}"
 echo ""
 
 mkdir -p external ${CACHE_DIR}
@@ -70,6 +69,11 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
       -B build
    cmake --build build --config ${BUILD_TYPE}
    cd ..
+
+   echo "$SDL3_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
 
 #
 # libdmdutil
