@@ -95,7 +95,7 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
    tar xzf libdmdutil-${LIBDMDUTIL_SHA}.tar.gz
    mv libdmdutil-${LIBDMDUTIL_SHA} libdmdutil
    cd libdmdutil
-   ./platforms/windows/x64/external.sh
+   ./platforms/win/x64/external.sh
    cmake \
       -G "Visual Studio 17 2022" \
       -DPLATFORM=win \
@@ -164,7 +164,7 @@ if [ "${LIBPPUC_EXPECTED_SHA}" != "${LIBPPUC_FOUND_SHA}" ]; then
    mv libppuc-${LIBPPUC_SHA} libppuc
    cd libppuc
 
-   BUILD_TYPE=${BUILD_TYPE} platforms/windows/x64/external.sh
+    platforms/win/x64/external.sh
    cmake \
       -G "Visual Studio 17 2022" \
       -DPLATFORM=win \
