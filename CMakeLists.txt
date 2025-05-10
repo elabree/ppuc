@@ -41,46 +41,48 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
-add_executable(ppuc_pinmame
+add_executable(ppuc-pinmame
    src/ppuc.cpp
 )
 
-target_include_directories(ppuc_pinmame PUBLIC
+target_include_directories(ppuc-pinmame PUBLIC
    third-party/include
 )
 
 if(PLATFORM STREQUAL "win")
-   target_link_directories(ppuc_pinmame PUBLIC
+   target_link_directories(ppuc-pinmame PUBLIC
       third-party/build-libs/${PLATFORM}-${ARCH}
       third-party/runtime-libs/${PLATFORM}-${ARCH}
    )
    if(ARCH STREQUAL "x64")
-      target_link_libraries(ppuc_pinmame LINK_PUBLIC
+      target_link_libraries(ppuc-pinmame LINK_PUBLIC
          pinmame64
          ppuc64
          dmdutil64
          cargs64
-         SDL3
-         SDL3_image
+         SDL364
+         SDL3_image64
+         yaml-cpp
          ws2_32
       )
    else()
-      target_link_libraries(ppuc_pinmame LINK_PUBLIC
+      target_link_libraries(ppuc-pinmame LINK_PUBLIC
          pinmame
          ppuc
          dmdutil
          cargs
          SDL3
          SDL3_image
+         yaml-cpp
          ws2_32
       )
    endif()
 else()
-   target_link_directories(ppuc_pinmame PUBLIC
+   target_link_directories(ppuc-pinmame PUBLIC
       third-party/runtime-libs/${PLATFORM}-${ARCH}
    )
 
-   target_link_libraries(ppuc_pinmame LINK_PUBLIC
+   target_link_libraries(ppuc-pinmame LINK_PUBLIC
       pinmame
       ppuc
       dmdutil
